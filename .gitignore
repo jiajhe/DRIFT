@@ -8,8 +8,7 @@
 *.out
 *.synctex.gz
 
-# Locally compiled manuscript outputs
-/paper/main.pdf
+# Camera-ready output is generated only after acceptance.
 /paper/camera-ready.pdf
 
 # Editor and operating-system metadata
