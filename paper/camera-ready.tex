@@ -1,0 +1,54 @@
+\documentclass[letterpaper]{article}
+\usepackage{aaai2027}
+\usepackage[hyphens]{url}
+\usepackage{graphicx}
+\urlstyle{rm}
+\def\UrlFont{\rm}
+\usepackage{natbib}
+\usepackage{caption}
+\usepackage{booktabs}
+\frenchspacing
+
+\pdfinfo{
+/TemplateVersion (2027.1)
+}
+
+\setcounter{secnumdepth}{0}
+
+\title{DRIFT: Directed Role-Factorized Information Flow over Time for Stock Trend Forecasting}
+\author{
+Jiajun He, Cong Ding, Yanlin Fu
+}
+\affiliations{
+TODO: Add author affiliations and institutional email addresses.
+}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+Stock trend forecasting aims to predict future movements in stock prices, which depend not only on the historical dynamics of individual stocks but also on predictive information that propagates across stocks over time. Existing methods typically extract temporal representations from individual stock histories and then aggregate shared information through predefined concepts, learned graph structures, or cross-stock attention for joint forecasting.
+
+However, this paradigm overlooks two important properties of inter-stock information transmission. First, it commonly represents stock relations through industries, concepts, correlations, or representation similarities, which mainly characterize common exposure but cannot adequately express asymmetric predictive transmission---who influences whom. Second, it usually performs information aggregation independently on each trading day without retaining propagated information as a cross-day state, and therefore cannot capture its persistence and retransmission.
+
+To address these limitations, we propose Directed Role-Factorized Information Flow over Time (DRIFT), which formulates stock trend forecasting as a coupled dynamical system of local stock dynamics and directed cross-stock information flow. DRIFT models cross-stock and cross-day information transmission with a role-factorized directed operator and a persistent flow state, while separating rapidly varying transmission intensity from slowly evolving direction. Experiments on the Chinese A-share and U.S. equity markets show that DRIFT outperforms existing methods.
+\end{abstract}
+
+\section{Introduction}
+% TODO: Share the section body with the anonymous manuscript before publication.
+
+\section{Related Work}
+
+\section{Method}
+
+\section{Experiments}
+
+\section{Conclusion}
+
+\section*{Acknowledgments}
+% TODO: Add acknowledgments only after acceptance.
+
+\bibliography{aaai2027}
+
+\end{document}

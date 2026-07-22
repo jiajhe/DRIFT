@@ -1,0 +1,19 @@
+# LaTeX intermediate files
+*.aux
+*.bbl
+*.blg
+*.fdb_latexmk
+*.fls
+*.log
+*.out
+*.synctex.gz
+
+# Locally compiled manuscript outputs
+/paper/main.pdf
+/paper/camera-ready.pdf
+
+# Editor and operating-system metadata
+.DS_Store
+Thumbs.db
+*.swp
+*~

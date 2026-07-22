@@ -1,0 +1,59 @@
+\documentclass[letterpaper]{article}
+\usepackage[submission]{aaai2027}
+\usepackage[hyphens]{url}
+\usepackage{graphicx}
+\urlstyle{rm}
+\def\UrlFont{\rm}
+\usepackage{natbib}
+\usepackage{caption}
+\usepackage{booktabs}
+\frenchspacing
+
+\pdfinfo{
+/TemplateVersion (2027.1)
+}
+
+\setcounter{secnumdepth}{0}
+
+\title{DRIFT: Directed Role-Factorized Information Flow over Time for Stock Trend Forecasting}
+\author{Anonymous Authors}
+\affiliations{}
+
+\begin{document}
+
+\maketitle
+
+\begin{center}
+\textbf{Paper ID: 367}\\
+Primary Topic: ML: Graph-based Machine Learning\\
+Secondary Topic: ML: Time-Series \& Data Streams
+\end{center}
+
+\begin{abstract}
+Stock trend forecasting aims to predict future movements in stock prices, which depend not only on the historical dynamics of individual stocks but also on predictive information that propagates across stocks over time. Existing methods typically extract temporal representations from individual stock histories and then aggregate shared information through predefined concepts, learned graph structures, or cross-stock attention for joint forecasting.
+
+However, this paradigm overlooks two important properties of inter-stock information transmission. First, it commonly represents stock relations through industries, concepts, correlations, or representation similarities, which mainly characterize common exposure but cannot adequately express asymmetric predictive transmission---who influences whom. Second, it usually performs information aggregation independently on each trading day without retaining propagated information as a cross-day state, and therefore cannot capture its persistence and retransmission.
+
+To address these limitations, we propose Directed Role-Factorized Information Flow over Time (DRIFT), which formulates stock trend forecasting as a coupled dynamical system of local stock dynamics and directed cross-stock information flow. DRIFT models cross-stock and cross-day information transmission with a role-factorized directed operator and a persistent flow state, while separating rapidly varying transmission intensity from slowly evolving direction. Experiments on the Chinese A-share and U.S. equity markets show that DRIFT outperforms existing methods.
+\end{abstract}
+
+\section{Introduction}
+% TODO: Motivate the problem, identify the gap, and summarize the contributions.
+
+\section{Related Work}
+% TODO: Position DRIFT relative to stock forecasting, graph learning, and temporal modeling.
+
+\section{Method}
+% TODO: Define the forecasting setup, directed operator, persistent flow state,
+% and the separation of fast transmission intensity from slow direction dynamics.
+
+\section{Experiments}
+% TODO: Describe datasets, baselines, evaluation protocol, main results, ablations,
+% robustness, and reproducibility details.
+
+\section{Conclusion}
+% TODO: Summarize the supported findings without introducing new claims.
+
+\bibliography{aaai2027}
+
+\end{document}
