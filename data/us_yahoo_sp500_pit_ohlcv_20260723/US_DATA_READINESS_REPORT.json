@@ -1,0 +1,962 @@
+{
+  "checked_at_utc": "2026-07-23T17:04:06.135314+00:00",
+  "checks": {
+    "calendar_contains_test_end": true,
+    "calendar_reaches_required_end": true,
+    "daily_close_coverage": true,
+    "mean_close_coverage": true,
+    "membership_max": true,
+    "membership_min": true,
+    "no_duplicate_calendar": true,
+    "no_membership_overlap": true,
+    "no_vwap": true
+  },
+  "observed": {
+    "annual_close_coverage": {
+      "2014": {
+        "mean": 0.9985270122470411,
+        "minimum": 0.9979838709677419,
+        "minimum_date": "2014-01-02",
+        "trading_days": 252
+      },
+      "2015": {
+        "mean": 0.9989437433037063,
+        "minimum": 0.9959919839679359,
+        "minimum_date": "2015-03-17",
+        "trading_days": 252
+      },
+      "2016": {
+        "mean": 0.9998972364510214,
+        "minimum": 0.99800796812749,
+        "minimum_date": "2016-01-15",
+        "trading_days": 252
+      },
+      "2017": {
+        "mean": 0.9997786474097928,
+        "minimum": 0.9662698412698413,
+        "minimum_date": "2017-11-08",
+        "trading_days": 251
+      },
+      "2018": {
+        "mean": 0.9792338582179219,
+        "minimum": 0.9682539682539683,
+        "minimum_date": "2018-04-26",
+        "trading_days": 251
+      },
+      "2019": {
+        "mean": 0.9822161198546157,
+        "minimum": 0.9722222222222222,
+        "minimum_date": "2019-02-14",
+        "trading_days": 252
+      },
+      "2020": {
+        "mean": 0.9975710613312087,
+        "minimum": 0.9920792079207921,
+        "minimum_date": "2020-01-02",
+        "trading_days": 253
+      },
+      "2021": {
+        "mean": 0.9904100996834379,
+        "minimum": 0.9722222222222222,
+        "minimum_date": "2021-10-18",
+        "trading_days": 252
+      },
+      "2022": {
+        "mean": 0.9889373365866325,
+        "minimum": 0.9621513944223108,
+        "minimum_date": "2022-12-14",
+        "trading_days": 251
+      },
+      "2023": {
+        "mean": 0.9731717899772677,
+        "minimum": 0.9661354581673307,
+        "minimum_date": "2023-01-03",
+        "trading_days": 250
+      },
+      "2024": {
+        "mean": 0.9840777308027499,
+        "minimum": 0.9800796812749004,
+        "minimum_date": "2024-01-02",
+        "trading_days": 252
+      },
+      "2025": {
+        "mean": 0.9891213670358799,
+        "minimum": 0.9840954274353877,
+        "minimum_date": "2025-01-02",
+        "trading_days": 250
+      }
+    },
+    "calendar_end": "2026-01-09",
+    "calendar_rows": 3024,
+    "calendar_start": "2014-01-02",
+    "daily_close_coverage_mean": 0.9901724014699178,
+    "daily_close_coverage_median": 0.9940357852882704,
+    "daily_close_coverage_min": 0.9621513944223108,
+    "daily_close_coverage_min_date": "2022-12-14",
+    "daily_close_coverage_quantiles": {
+      "p01": 0.9661354581673307,
+      "p05": 0.9721115537848606,
+      "p25": 0.9821428571428571,
+      "p75": 1.0,
+      "p95": 1.0,
+      "p99": 1.0
+    },
+    "daily_membership_max": 506,
+    "daily_membership_mean": 502.6060304837641,
+    "daily_membership_min": 496,
+    "forbidden_vwap_files": [],
+    "missing_price_symbol_count": 1,
+    "missing_price_symbols": [
+      "DAY"
+    ],
+    "missing_required_fields": {
+      "DAY": [
+        "open",
+        "high",
+        "low",
+        "close",
+        "volume",
+        "factor",
+        "change"
+      ]
+    },
+    "overlapping_membership_intervals": 0,
+    "partial_symbol_coverage": [
+      {
+        "coverage": 0.7525876460767946,
+        "covered_rows": 2254,
+        "membership_rows": 2995,
+        "missing_rows": 741,
+        "symbol": "IPG"
+      },
+      {
+        "coverage": 0.7690208120095531,
+        "covered_rows": 2254,
+        "membership_rows": 2931,
+        "missing_rows": 677,
+        "symbol": "WBA"
+      },
+      {
+        "coverage": 0.7759036144578313,
+        "covered_rows": 2254,
+        "membership_rows": 2905,
+        "missing_rows": 651,
+        "symbol": "HES"
+      },
+      {
+        "coverage": 0.7785837651122626,
+        "covered_rows": 2254,
+        "membership_rows": 2895,
+        "missing_rows": 641,
+        "symbol": "JNPR"
+      },
+      {
+        "coverage": 0.665625,
+        "covered_rows": 1065,
+        "membership_rows": 1600,
+        "missing_rows": 535,
+        "symbol": "AGN"
+      },
+      {
+        "coverage": 0.6761904761904762,
+        "covered_rows": 1065,
+        "membership_rows": 1575,
+        "missing_rows": 510,
+        "symbol": "RTN"
+      },
+      {
+        "coverage": 0.5256769374416433,
+        "covered_rows": 563,
+        "membership_rows": 1071,
+        "missing_rows": 508,
+        "symbol": "CTLT"
+      },
+      {
+        "coverage": 0.4090909090909091,
+        "covered_rows": 351,
+        "membership_rows": 858,
+        "missing_rows": 507,
+        "symbol": "ARNC"
+      },
+      {
+        "coverage": 0.8214285714285714,
+        "covered_rows": 2254,
+        "membership_rows": 2744,
+        "missing_rows": 490,
+        "symbol": "MRO"
+      },
+      {
+        "coverage": 0.0,
+        "covered_rows": 0,
+        "membership_rows": 481,
+        "missing_rows": 481,
+        "symbol": "DAY"
+      },
+      {
+        "coverage": 0.7138069705093834,
+        "covered_rows": 1065,
+        "membership_rows": 1492,
+        "missing_rows": 427,
+        "symbol": "VIAB"
+      },
+      {
+        "coverage": 0.7174645987862441,
+        "covered_rows": 1064,
+        "membership_rows": 1483,
+        "missing_rows": 419,
+        "symbol": "CELG"
+      },
+      {
+        "coverage": 0.8554079696394687,
+        "covered_rows": 2254,
+        "membership_rows": 2635,
+        "missing_rows": 381,
+        "symbol": "CMA"
+      },
+      {
+        "coverage": 0.7395833333333334,
+        "covered_rows": 1065,
+        "membership_rows": 1440,
+        "missing_rows": 375,
+        "symbol": "TSS"
+      },
+      {
+        "coverage": 0.8655913978494624,
+        "covered_rows": 2254,
+        "membership_rows": 2604,
+        "missing_rows": 350,
+        "symbol": "PXD"
+      },
+      {
+        "coverage": 0.7553191489361702,
+        "covered_rows": 1065,
+        "membership_rows": 1410,
+        "missing_rows": 345,
+        "symbol": "APC"
+      },
+      {
+        "coverage": 0.0,
+        "covered_rows": 0,
+        "membership_rows": 343,
+        "missing_rows": 343,
+        "symbol": "WCG"
+      },
+      {
+        "coverage": 0.7656362329259525,
+        "covered_rows": 1065,
+        "membership_rows": 1391,
+        "missing_rows": 326,
+        "symbol": "RHT"
+      },
+      {
+        "coverage": 0.779848171152519,
+        "covered_rows": 1130,
+        "membership_rows": 1449,
+        "missing_rows": 319,
+        "symbol": "FLT"
+      },
+      {
+        "coverage": 0.7706222865412445,
+        "covered_rows": 1065,
+        "membership_rows": 1382,
+        "missing_rows": 317,
+        "symbol": "LLL"
+      },
+      {
+        "coverage": 0.8530990727183992,
+        "covered_rows": 1748,
+        "membership_rows": 2049,
+        "missing_rows": 301,
+        "symbol": "UA"
+      },
+      {
+        "coverage": 0.3219178082191781,
+        "covered_rows": 141,
+        "membership_rows": 438,
+        "missing_rows": 297,
+        "symbol": "DWDP"
+      },
+      {
+        "coverage": 0.5243697478991597,
+        "covered_rows": 312,
+        "membership_rows": 595,
+        "missing_rows": 283,
+        "symbol": "CDAY"
+      },
+      {
+        "coverage": 0.763751127141569,
+        "covered_rows": 847,
+        "membership_rows": 1109,
+        "missing_rows": 262,
+        "symbol": "TWTR"
+      },
+      {
+        "coverage": 0.8990825688073395,
+        "covered_rows": 2254,
+        "membership_rows": 2507,
+        "missing_rows": 253,
+        "symbol": "SEE"
+      },
+      {
+        "coverage": 0.8873303167420814,
+        "covered_rows": 1961,
+        "membership_rows": 2210,
+        "missing_rows": 249,
+        "symbol": "NLSN"
+      },
+      {
+        "coverage": 0.9194407456724367,
+        "covered_rows": 2762,
+        "membership_rows": 3004,
+        "missing_rows": 242,
+        "symbol": "K"
+      },
+      {
+        "coverage": 0.8906037221970041,
+        "covered_rows": 1962,
+        "membership_rows": 2203,
+        "missing_rows": 241,
+        "symbol": "CTXS"
+      },
+      {
+        "coverage": 0.8154670750382849,
+        "covered_rows": 1065,
+        "membership_rows": 1306,
+        "missing_rows": 241,
+        "symbol": "DRE"
+      },
+      {
+        "coverage": 0.9068419018167762,
+        "covered_rows": 2346,
+        "membership_rows": 2587,
+        "missing_rows": 241,
+        "symbol": "FOX"
+      },
+      {
+        "coverage": 0.9204771371769384,
+        "covered_rows": 2778,
+        "membership_rows": 3018,
+        "missing_rows": 240,
+        "symbol": "FOXA"
+      },
+      {
+        "coverage": 0.89697265625,
+        "covered_rows": 1837,
+        "membership_rows": 2048,
+        "missing_rows": 211,
+        "symbol": "ATVI"
+      },
+      {
+        "coverage": 0.9241639189825719,
+        "covered_rows": 1962,
+        "membership_rows": 2123,
+        "missing_rows": 161,
+        "symbol": "CERN"
+      },
+      {
+        "coverage": 0.7880986937590712,
+        "covered_rows": 543,
+        "membership_rows": 689,
+        "missing_rows": 146,
+        "symbol": "MXIM"
+      },
+      {
+        "coverage": 0.931068439192516,
+        "covered_rows": 1891,
+        "membership_rows": 2031,
+        "missing_rows": 140,
+        "symbol": "ANSS"
+      },
+      {
+        "coverage": 0.9080761654629022,
+        "covered_rows": 1383,
+        "membership_rows": 1523,
+        "missing_rows": 140,
+        "symbol": "RE"
+      },
+      {
+        "coverage": 0.9195183776932826,
+        "covered_rows": 1451,
+        "membership_rows": 1578,
+        "missing_rows": 127,
+        "symbol": "DISH"
+      },
+      {
+        "coverage": 0.941910705712914,
+        "covered_rows": 1962,
+        "membership_rows": 2083,
+        "missing_rows": 121,
+        "symbol": "DISCA"
+      },
+      {
+        "coverage": 0.937435367114788,
+        "covered_rows": 1813,
+        "membership_rows": 1934,
+        "missing_rows": 121,
+        "symbol": "DISCK"
+      },
+      {
+        "coverage": 0.9378947368421052,
+        "covered_rows": 1782,
+        "membership_rows": 1900,
+        "missing_rows": 118,
+        "symbol": "ALXN"
+      },
+      {
+        "coverage": 0.9436958614051973,
+        "covered_rows": 1961,
+        "membership_rows": 2078,
+        "missing_rows": 117,
+        "symbol": "PBCT"
+      },
+      {
+        "coverage": 0.908703071672355,
+        "covered_rows": 1065,
+        "membership_rows": 1172,
+        "missing_rows": 107,
+        "symbol": "GGP"
+      },
+      {
+        "coverage": 0.965396714435512,
+        "covered_rows": 2762,
+        "membership_rows": 2861,
+        "missing_rows": 99,
+        "symbol": "DFS"
+      },
+      {
+        "coverage": 0.9120879120879121,
+        "covered_rows": 996,
+        "membership_rows": 1092,
+        "missing_rows": 96,
+        "symbol": "FRC"
+      },
+      {
+        "coverage": 0.9213389121338912,
+        "covered_rows": 1101,
+        "membership_rows": 1195,
+        "missing_rows": 94,
+        "symbol": "INFO"
+      },
+      {
+        "coverage": 0.8847184986595175,
+        "covered_rows": 660,
+        "membership_rows": 746,
+        "missing_rows": 86,
+        "symbol": "HFC"
+      },
+      {
+        "coverage": 0.9589242053789732,
+        "covered_rows": 1961,
+        "membership_rows": 2045,
+        "missing_rows": 84,
+        "symbol": "XLNX"
+      },
+      {
+        "coverage": 0.9631811487481591,
+        "covered_rows": 1962,
+        "membership_rows": 2037,
+        "missing_rows": 75,
+        "symbol": "GPS"
+      },
+      {
+        "coverage": 0.9611650485436893,
+        "covered_rows": 1782,
+        "membership_rows": 1854,
+        "missing_rows": 72,
+        "symbol": "FLIR"
+      },
+      {
+        "coverage": 0.9408127208480566,
+        "covered_rows": 1065,
+        "membership_rows": 1132,
+        "missing_rows": 67,
+        "symbol": "DPS"
+      },
+      {
+        "coverage": 0.8025889967637541,
+        "covered_rows": 248,
+        "membership_rows": 309,
+        "missing_rows": 61,
+        "symbol": "SBNY"
+      },
+      {
+        "coverage": 0.9514331210191083,
+        "covered_rows": 1195,
+        "membership_rows": 1256,
+        "missing_rows": 61,
+        "symbol": "SIVB"
+      },
+      {
+        "coverage": 0.9610561056105611,
+        "covered_rows": 1456,
+        "membership_rows": 1515,
+        "missing_rows": 59,
+        "symbol": "WLTW"
+      },
+      {
+        "coverage": 0.9705882352941176,
+        "covered_rows": 1782,
+        "membership_rows": 1836,
+        "missing_rows": 54,
+        "symbol": "VAR"
+      },
+      {
+        "coverage": 0.9620355411954766,
+        "covered_rows": 1191,
+        "membership_rows": 1238,
+        "missing_rows": 47,
+        "symbol": "CXO"
+      },
+      {
+        "coverage": 0.9735294117647059,
+        "covered_rows": 1655,
+        "membership_rows": 1700,
+        "missing_rows": 45,
+        "symbol": "HBI"
+      },
+      {
+        "coverage": 0.9594594594594594,
+        "covered_rows": 1065,
+        "membership_rows": 1110,
+        "missing_rows": 45,
+        "symbol": "WYN"
+      },
+      {
+        "coverage": 0.9795204795204795,
+        "covered_rows": 1961,
+        "membership_rows": 2002,
+        "missing_rows": 41,
+        "symbol": "KSU"
+      },
+      {
+        "coverage": 0.9784824462061155,
+        "covered_rows": 1728,
+        "membership_rows": 1766,
+        "missing_rows": 38,
+        "symbol": "TIF"
+      },
+      {
+        "coverage": 0.9830508474576272,
+        "covered_rows": 1218,
+        "membership_rows": 1239,
+        "missing_rows": 21,
+        "symbol": "COL"
+      },
+      {
+        "coverage": 0.0,
+        "covered_rows": 0,
+        "membership_rows": 15,
+        "missing_rows": 15,
+        "symbol": "LIFE"
+      },
+      {
+        "coverage": 0.9947826086956522,
+        "covered_rows": 1144,
+        "membership_rows": 1150,
+        "missing_rows": 6,
+        "symbol": "ABMD"
+      },
+      {
+        "coverage": 0.9970238095238095,
+        "covered_rows": 1005,
+        "membership_rows": 1008,
+        "missing_rows": 3,
+        "symbol": "BCR"
+      },
+      {
+        "coverage": 0.9982384028185555,
+        "covered_rows": 1700,
+        "membership_rows": 1703,
+        "missing_rows": 3,
+        "symbol": "ETFC"
+      },
+      {
+        "coverage": 0.998165137614679,
+        "covered_rows": 1632,
+        "membership_rows": 1635,
+        "missing_rows": 3,
+        "symbol": "FBHS"
+      },
+      {
+        "coverage": 0.9967880085653105,
+        "covered_rows": 931,
+        "membership_rows": 934,
+        "missing_rows": 3,
+        "symbol": "SPLS"
+      },
+      {
+        "coverage": 0.9973309608540926,
+        "covered_rows": 1121,
+        "membership_rows": 1124,
+        "missing_rows": 3,
+        "symbol": "TWX"
+      },
+      {
+        "coverage": 0.9983857949959645,
+        "covered_rows": 1237,
+        "membership_rows": 1239,
+        "missing_rows": 2,
+        "symbol": "AET"
+      },
+      {
+        "coverage": 0.997737556561086,
+        "covered_rows": 882,
+        "membership_rows": 884,
+        "missing_rows": 2,
+        "symbol": "BHI"
+      },
+      {
+        "coverage": 0.9949367088607595,
+        "covered_rows": 393,
+        "membership_rows": 395,
+        "missing_rows": 2,
+        "symbol": "DTV"
+      },
+      {
+        "coverage": 0.9959432048681541,
+        "covered_rows": 491,
+        "membership_rows": 493,
+        "missing_rows": 2,
+        "symbol": "GMCR"
+      },
+      {
+        "coverage": 0.9977037887485649,
+        "covered_rows": 869,
+        "membership_rows": 871,
+        "missing_rows": 2,
+        "symbol": "MJN"
+      },
+      {
+        "coverage": 0.9988276670574443,
+        "covered_rows": 1704,
+        "membership_rows": 1706,
+        "missing_rows": 2,
+        "symbol": "NBL"
+      },
+      {
+        "coverage": 0.9964601769911504,
+        "covered_rows": 563,
+        "membership_rows": 565,
+        "missing_rows": 2,
+        "symbol": "VLTO"
+      },
+      {
+        "coverage": 0.9983108108108109,
+        "covered_rows": 1182,
+        "membership_rows": 1184,
+        "missing_rows": 2,
+        "symbol": "XL"
+      },
+      {
+        "coverage": 0.9980544747081712,
+        "covered_rows": 513,
+        "membership_rows": 514,
+        "missing_rows": 1,
+        "symbol": "ACE"
+      },
+      {
+        "coverage": 0.9982964224872232,
+        "covered_rows": 586,
+        "membership_rows": 587,
+        "missing_rows": 1,
+        "symbol": "ADT"
+      },
+      {
+        "coverage": 0.998003992015968,
+        "covered_rows": 500,
+        "membership_rows": 501,
+        "missing_rows": 1,
+        "symbol": "ALTR"
+      },
+      {
+        "coverage": 0.9995313964386129,
+        "covered_rows": 2133,
+        "membership_rows": 2134,
+        "missing_rows": 1,
+        "symbol": "BKR"
+      },
+      {
+        "coverage": 0.9991809991809992,
+        "covered_rows": 1220,
+        "membership_rows": 1221,
+        "missing_rows": 1,
+        "symbol": "CA"
+      },
+      {
+        "coverage": 0.9966996699669967,
+        "covered_rows": 302,
+        "membership_rows": 303,
+        "missing_rows": 1,
+        "symbol": "CFN"
+      },
+      {
+        "coverage": 0.9996027016289233,
+        "covered_rows": 2516,
+        "membership_rows": 2517,
+        "missing_rows": 1,
+        "symbol": "CHD"
+      },
+      {
+        "coverage": 0.9836065573770492,
+        "covered_rows": 60,
+        "membership_rows": 61,
+        "missing_rows": 1,
+        "symbol": "CMCSK"
+      },
+      {
+        "coverage": 0.9995926680244399,
+        "covered_rows": 2454,
+        "membership_rows": 2455,
+        "missing_rows": 1,
+        "symbol": "CNC"
+      },
+      {
+        "coverage": 0.9960474308300395,
+        "covered_rows": 252,
+        "membership_rows": 253,
+        "missing_rows": 1,
+        "symbol": "CPGX"
+      },
+      {
+        "coverage": 0.9983922829581994,
+        "covered_rows": 621,
+        "membership_rows": 622,
+        "missing_rows": 1,
+        "symbol": "CVC"
+      },
+      {
+        "coverage": 0.9985207100591716,
+        "covered_rows": 675,
+        "membership_rows": 676,
+        "missing_rows": 1,
+        "symbol": "EMC"
+      },
+      {
+        "coverage": 0.9992019154030327,
+        "covered_rows": 1252,
+        "membership_rows": 1253,
+        "missing_rows": 1,
+        "symbol": "ESRX"
+      },
+      {
+        "coverage": 0.9973684210526316,
+        "covered_rows": 379,
+        "membership_rows": 380,
+        "missing_rows": 1,
+        "symbol": "FDO"
+      },
+      {
+        "coverage": 0.9996686547382373,
+        "covered_rows": 3017,
+        "membership_rows": 3018,
+        "missing_rows": 1,
+        "symbol": "FISV"
+      },
+      {
+        "coverage": 0.9992242048099301,
+        "covered_rows": 1288,
+        "membership_rows": 1289,
+        "missing_rows": 1,
+        "symbol": "NFX"
+      },
+      {
+        "coverage": 0.9996686547382373,
+        "covered_rows": 3017,
+        "membership_rows": 3018,
+        "missing_rows": 1,
+        "symbol": "PFG"
+      },
+      {
+        "coverage": 0.9895833333333334,
+        "covered_rows": 95,
+        "membership_rows": 96,
+        "missing_rows": 1,
+        "symbol": "Q"
+      },
+      {
+        "coverage": 0.9988851727982163,
+        "covered_rows": 896,
+        "membership_rows": 897,
+        "missing_rows": 1,
+        "symbol": "RAI"
+      },
+      {
+        "coverage": 0.9987405541561712,
+        "covered_rows": 793,
+        "membership_rows": 794,
+        "missing_rows": 1,
+        "symbol": "SE"
+      },
+      {
+        "coverage": 0.9983818770226537,
+        "covered_rows": 617,
+        "membership_rows": 618,
+        "missing_rows": 1,
+        "symbol": "SNDK"
+      },
+      {
+        "coverage": 0.9973404255319149,
+        "covered_rows": 375,
+        "membership_rows": 376,
+        "missing_rows": 1,
+        "symbol": "TEG"
+      },
+      {
+        "coverage": 0.9996686547382373,
+        "covered_rows": 3017,
+        "membership_rows": 3018,
+        "missing_rows": 1,
+        "symbol": "XEL"
+      }
+    ],
+    "universe_end": "2025-12-31",
+    "universe_start": "2014-01-02",
+    "universe_symbols": 745,
+    "universe_trading_days": 3018,
+    "worst_close_coverage_dates": [
+      {
+        "coverage": 0.9621513944223108,
+        "covered": 483,
+        "date": "2022-12-14",
+        "membership": 502,
+        "missing": 19
+      },
+      {
+        "coverage": 0.9622266401590457,
+        "covered": 484,
+        "date": "2022-12-15",
+        "membership": 503,
+        "missing": 19
+      },
+      {
+        "coverage": 0.9622266401590457,
+        "covered": 484,
+        "date": "2022-12-16",
+        "membership": 503,
+        "missing": 19
+      },
+      {
+        "coverage": 0.9641434262948207,
+        "covered": 484,
+        "date": "2022-12-19",
+        "membership": 502,
+        "missing": 18
+      },
+      {
+        "coverage": 0.9641434262948207,
+        "covered": 484,
+        "date": "2022-12-20",
+        "membership": 502,
+        "missing": 18
+      },
+      {
+        "coverage": 0.9641434262948207,
+        "covered": 484,
+        "date": "2022-12-21",
+        "membership": 502,
+        "missing": 18
+      },
+      {
+        "coverage": 0.9661354581673307,
+        "covered": 485,
+        "date": "2022-12-22",
+        "membership": 502,
+        "missing": 17
+      },
+      {
+        "coverage": 0.9661354581673307,
+        "covered": 485,
+        "date": "2022-12-23",
+        "membership": 502,
+        "missing": 17
+      },
+      {
+        "coverage": 0.9661354581673307,
+        "covered": 485,
+        "date": "2022-12-27",
+        "membership": 502,
+        "missing": 17
+      },
+      {
+        "coverage": 0.9661354581673307,
+        "covered": 485,
+        "date": "2022-12-28",
+        "membership": 502,
+        "missing": 17
+      },
+      {
+        "coverage": 0.9661354581673307,
+        "covered": 485,
+        "date": "2022-12-29",
+        "membership": 502,
+        "missing": 17
+      },
+      {
+        "coverage": 0.9661354581673307,
+        "covered": 485,
+        "date": "2022-12-30",
+        "membership": 502,
+        "missing": 17
+      },
+      {
+        "coverage": 0.9661354581673307,
+        "covered": 485,
+        "date": "2023-01-03",
+        "membership": 502,
+        "missing": 17
+      },
+      {
+        "coverage": 0.9661354581673307,
+        "covered": 485,
+        "date": "2023-01-05",
+        "membership": 502,
+        "missing": 17
+      },
+      {
+        "coverage": 0.9661354581673307,
+        "covered": 485,
+        "date": "2023-01-06",
+        "membership": 502,
+        "missing": 17
+      },
+      {
+        "coverage": 0.9661354581673307,
+        "covered": 485,
+        "date": "2023-01-09",
+        "membership": 502,
+        "missing": 17
+      },
+      {
+        "coverage": 0.9661354581673307,
+        "covered": 485,
+        "date": "2023-01-10",
+        "membership": 502,
+        "missing": 17
+      },
+      {
+        "coverage": 0.9661354581673307,
+        "covered": 485,
+        "date": "2023-01-11",
+        "membership": 502,
+        "missing": 17
+      },
+      {
+        "coverage": 0.9661354581673307,
+        "covered": 485,
+        "date": "2023-01-12",
+        "membership": 502,
+        "missing": 17
+      },
+      {
+        "coverage": 0.9661354581673307,
+        "covered": 485,
+        "date": "2023-01-13",
+        "membership": 502,
+        "missing": 17
+      }
+    ]
+  },
+  "provider": "/Users/hejiajun/Desktop/se-fdg/data/raw/us_yahoo_sp500_pit_ohlcv_20260723",
+  "schema": "meta_fdg_us_provider_audit_v1",
+  "status": "pass"
+}

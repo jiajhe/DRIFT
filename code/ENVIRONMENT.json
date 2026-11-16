@@ -1,0 +1,15 @@
+{
+  "python_version": "3.12.3 | packaged by Anaconda, Inc. | (main, May  6 2024, 19:46:43) [GCC 11.2.0]",
+  "server_python": "/root/autodl-tmp/meta-fdg/.venv/bin/python",
+  "packages": {
+    "torch": "2.8.0+cu128",
+    "numpy": "1.26.4",
+    "pandas": "2.3.3",
+    "scipy": "1.17.1",
+    "pyyaml": "6.0.2",
+    "pyqlib": "0.9.7",
+    "pyarrow": "21.0.0"
+  },
+  "reuses_existing_venv": true,
+  "venv_copied": false
+}

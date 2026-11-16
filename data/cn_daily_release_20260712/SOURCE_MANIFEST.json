@@ -1,0 +1,29 @@
+{
+  "data_id": "cn_daily_release_20260712",
+  "installed_at": "2026-07-13",
+  "source_repository": "https://github.com/chenditc/investment_data",
+  "source_release": "2026-07-12",
+  "source_published_at_utc": "2026-07-12T11:09:51Z",
+  "asset_name": "qlib_bin.tar.gz",
+  "asset_bytes": 558202092,
+  "asset_sha256": "fa41f5c8848310d6e6c40caec326a6a491d9937c8cb47faec969df8dca3c0f61",
+  "archive_entries": 67310,
+  "extracted_files": 61188,
+  "extracted_size_approx": "839MB",
+  "calendar_first": "2000-01-04",
+  "calendar_last": "2026-07-10",
+  "calendar_rows": 6425,
+  "required_test_end": "2025-12-31",
+  "required_test_end_present": true,
+  "active_members_2025_12_31": {
+    "csi300": 300,
+    "csi500": 500,
+    "csi1000": 1000
+  },
+  "handler_smoke": {
+    "Alpha158_columns": 158,
+    "Alpha360_columns": 360,
+    "status": "passed"
+  },
+  "integrity": "Asset checksum matches the digest published by the GitHub release API."
+}

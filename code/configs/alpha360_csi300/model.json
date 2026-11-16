@@ -1,0 +1,55 @@
+{
+  "schema_version": 1,
+  "model_family": "Flow-FDG",
+  "single_model": true,
+  "ensemble": false,
+  "encoder": {
+    "arch": "gru",
+    "lookback": 20,
+    "hidden_dim": 64,
+    "num_layers": 2,
+    "output_dim": 64,
+    "dropout": 0.1
+  },
+  "latent_market_roles": {
+    "count": 16,
+    "projection_dim": 64,
+    "assignment": "entmax15",
+    "sender_temperature": 1.0,
+    "receiver_temperature": 1.0,
+    "activity": "stock_and_label_free_market_context_dependent",
+    "contrast_basis": "fixed_orthonormal_helmert"
+  },
+  "flow": {
+    "dimension": 16,
+    "state_equation": "F=C(alpha*F_prev+K*U+rho*K*F_prev)",
+    "suspension_max_days": 20,
+    "long_gap_policy": "reset"
+  },
+  "dynamics": {
+    "context_dim": 32,
+    "fast_rank": 4,
+    "fast_coefficient_mode": "nonnegative_sigmoid",
+    "slow_rank": 4,
+    "operator": "B0+V_fast_diag(a_t)_W_fast_T+V_slow_diag(s_e)_W_slow_T, a_t=sigmoid(context)>=0",
+    "core_slow_state": "zero",
+    "gamma_max": 0.95,
+    "dissipation_floor": 0.05,
+    "normalization": "implicit_zero_diagonal_frobenius",
+    "epsilon": 1e-08
+  },
+  "output": {
+    "residual_readout": false,
+    "readout_mode": "bounded_shared_gated",
+    "readout": "shared_head_over_bounded_dynamic_convex_Z_F_interaction_fusion",
+    "max_flow_fraction": 0.08,
+    "fusion_hidden_dim": 96,
+    "local_hidden_dim": 64,
+    "local_head_use": "internal_information_source_and_auxiliary_diagnostic_only"
+  },
+  "se_extension": {
+    "implemented_interface": true,
+    "enabled_in_core_anchor": false,
+    "primary_test_slow_state_updates": false
+  }
+}

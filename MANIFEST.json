@@ -1,0 +1,511 @@
+{
+  "schema": "drift_minimal_bundle_v1",
+  "created_date": "2026-11-16",
+  "ssh_host": "connect.nmb2.seetacloud.com",
+  "ssh_port": 33691,
+  "selection": "A18 long-budget: maximum validation IC among 15 seeds separately for each of 5 settings. Not a multi-seed ensemble.",
+  "checkpoint_format": "Inference export: model parameters and configs retained; optimizer/RNG/resume state omitted.",
+  "models": [
+    {
+      "job": "alpha158__csi300__flow_fdg_v2__drift_shift2y_longbudget_allckpt_v1__seed8",
+      "seed": 8,
+      "handler": "Alpha158",
+      "market": "csi300",
+      "valid_ic": 0.026206696421339066,
+      "epoch": 18,
+      "test_ic": 0.020352533572184053,
+      "test_rankic": 0.0490746043042538,
+      "run_status": "done",
+      "evidence_directory": "/root/autodl-tmp/meta-fdg/runs/final_drift/alpha158__csi300__flow_fdg_v2__drift_shift2y_longbudget_allckpt_v1__seed8",
+      "recorded_checkpoint": "/root/autodl-tmp/flow-fdg-v2/runs/rolling_development/alpha158__csi300__flow_fdg_v2__drift_shift2y_longbudget_allckpt_v1__seed8/checkpoints/best_valid.pt",
+      "splits": {
+        "test": [
+          "2024-01-01",
+          "2025-12-31"
+        ],
+        "train": [
+          "2018-01-01",
+          "2022-12-31"
+        ],
+        "valid": [
+          "2023-01-01",
+          "2023-12-31"
+        ]
+      },
+      "data_id": "cn_daily_release_20260712",
+      "label": "Ref($close, -2) / Ref($close, -1) - 1",
+      "lookback": 20,
+      "archive_path": "/root/autodl-tmp/se-fdg-checkpoints/origins/flow-fdg-v2/runs/rolling_development/alpha158__csi300__flow_fdg_v2__drift_shift2y_longbudget_allckpt_v1__seed8/checkpoints/best_valid.pt",
+      "file_exists": true,
+      "expected_sha256": "fa8f806823ddeade14525288aba8f70bf483c19204dcc9059247ea1189f121c1",
+      "bytes": 878486,
+      "actual_sha256": "fa8f806823ddeade14525288aba8f70bf483c19204dcc9059247ea1189f121c1",
+      "checksum_match": true,
+      "run_manifest_sha256_match": true,
+      "cell": "alpha158_csi300",
+      "checkpoint": "checkpoints/alpha158_csi300.pt",
+      "export_bytes": 499184,
+      "export_sha256": "df05bc7764d6b3d498e7f331bba5e21eeba1e0815b652bfcac3a59e94b7db0cd",
+      "config": "code/configs/alpha158_csi300/runtime.json",
+      "model_state_bitwise_equal_to_source": true
+    },
+    {
+      "job": "alpha158__csi500__flow_fdg_v2__drift_shift2y_longbudget_allckpt_v1__seed13",
+      "seed": 13,
+      "handler": "Alpha158",
+      "market": "csi500",
+      "valid_ic": 0.020271498764146387,
+      "epoch": 90,
+      "test_ic": 0.009247728481841935,
+      "test_rankic": 0.029225987684778302,
+      "run_status": "done",
+      "evidence_directory": "/root/autodl-tmp/meta-fdg/runs/final_drift/alpha158__csi500__flow_fdg_v2__drift_shift2y_longbudget_allckpt_v1__seed13",
+      "recorded_checkpoint": "/root/autodl-tmp/flow-fdg-v2/runs/rolling_development/alpha158__csi500__flow_fdg_v2__drift_shift2y_longbudget_allckpt_v1__seed13/checkpoints/best_valid.pt",
+      "splits": {
+        "test": [
+          "2024-01-01",
+          "2025-12-31"
+        ],
+        "train": [
+          "2018-01-01",
+          "2022-12-31"
+        ],
+        "valid": [
+          "2023-01-01",
+          "2023-12-31"
+        ]
+      },
+      "data_id": "cn_daily_release_20260712",
+      "label": "Ref($close, -2) / Ref($close, -1) - 1",
+      "lookback": 20,
+      "archive_path": "/root/autodl-tmp/se-fdg-checkpoints/origins/flow-fdg-v2/runs/rolling_development/alpha158__csi500__flow_fdg_v2__drift_shift2y_longbudget_allckpt_v1__seed13/checkpoints/best_valid.pt",
+      "file_exists": true,
+      "expected_sha256": "548fe4ce73291396e6a2c40c3cf8c57ad6dcf41ad5b304d28fd97177e3ae42e8",
+      "bytes": 1504518,
+      "actual_sha256": "548fe4ce73291396e6a2c40c3cf8c57ad6dcf41ad5b304d28fd97177e3ae42e8",
+      "checksum_match": true,
+      "run_manifest_sha256_match": true,
+      "cell": "alpha158_csi500",
+      "checkpoint": "checkpoints/alpha158_csi500.pt",
+      "export_bytes": 499504,
+      "export_sha256": "326eeeb91393a21f37e6af964b0b309c0441dbb87053380e0aebaead95c13df3",
+      "config": "code/configs/alpha158_csi500/runtime.json",
+      "model_state_bitwise_equal_to_source": true
+    },
+    {
+      "job": "alpha158usohlcv__sp500_pit__drift_a18_csi_matched_longbudget_allckpt_v1__seed12",
+      "seed": 12,
+      "handler": "Alpha158USOHLCV",
+      "market": "sp500_pit",
+      "valid_ic": 0.019296045629275574,
+      "epoch": 56,
+      "test_ic": 0.004952834157916488,
+      "test_rankic": 0.0012485508217323425,
+      "run_status": "done",
+      "evidence_directory": "/root/autodl-tmp/meta-fdg/runs/final_drift/alpha158usohlcv__sp500_pit__drift_a18_csi_matched_longbudget_allckpt_v1__seed12",
+      "recorded_checkpoint": "/root/autodl-tmp/flow-fdg-v2/runs/us_csi_matched/alpha158usohlcv__sp500_pit__drift_a18_csi_matched_longbudget_allckpt_v1__seed12/checkpoints/best_valid.pt",
+      "splits": {
+        "test": [
+          "2024-01-01",
+          "2025-12-31"
+        ],
+        "train": [
+          "2018-01-01",
+          "2022-12-31"
+        ],
+        "valid": [
+          "2023-01-01",
+          "2023-12-31"
+        ]
+      },
+      "data_id": "us_yahoo_sp500_pit_ohlcv_20260723",
+      "label": "Ref($close, -2) / Ref($close, -1) - 1",
+      "lookback": 20,
+      "archive_path": "/root/autodl-tmp/se-fdg-checkpoints/origins/flow-fdg-v2/runs/us_csi_matched/alpha158usohlcv__sp500_pit__drift_a18_csi_matched_longbudget_allckpt_v1__seed12/checkpoints/best_valid.pt",
+      "file_exists": true,
+      "expected_sha256": "03c622ec17318803204c4a9dfef66a08eea0673574fe9db14dbef6efe4245715",
+      "bytes": 1503238,
+      "actual_sha256": "03c622ec17318803204c4a9dfef66a08eea0673574fe9db14dbef6efe4245715",
+      "checksum_match": true,
+      "run_manifest_sha256_match": true,
+      "cell": "alpha158us_sp500_pit",
+      "checkpoint": "checkpoints/alpha158us_sp500_pit.pt",
+      "export_bytes": 500075,
+      "export_sha256": "47f5c0427190fc0e396530d1c76a28d180247d88c9112d7fc0e08bd0b3add2bb",
+      "config": "code/configs/alpha158us_sp500_pit/runtime.json",
+      "model_state_bitwise_equal_to_source": true
+    },
+    {
+      "job": "alpha360__csi300__flow_fdg_v2__drift_shift2y_longbudget_allckpt_v1__seed11",
+      "seed": 11,
+      "handler": "Alpha360",
+      "market": "csi300",
+      "valid_ic": 0.033437767027548186,
+      "epoch": 87,
+      "test_ic": 0.024295499640505706,
+      "test_rankic": 0.039726736565931835,
+      "run_status": "done",
+      "evidence_directory": "/root/autodl-tmp/meta-fdg/runs/final_drift/alpha360__csi300__flow_fdg_v2__drift_shift2y_longbudget_allckpt_v1__seed11",
+      "recorded_checkpoint": "/root/autodl-tmp/flow-fdg-v2/runs/rolling_development/alpha360__csi300__flow_fdg_v2__drift_shift2y_longbudget_allckpt_v1__seed11/checkpoints/best_valid.pt",
+      "splits": {
+        "test": [
+          "2024-01-01",
+          "2025-12-31"
+        ],
+        "train": [
+          "2018-01-01",
+          "2022-12-31"
+        ],
+        "valid": [
+          "2023-01-01",
+          "2023-12-31"
+        ]
+      },
+      "data_id": "cn_daily_release_20260712",
+      "label": "Ref($close, -2) / Ref($close, -1) - 1",
+      "lookback": 20,
+      "archive_path": "/root/autodl-tmp/se-fdg-checkpoints/origins/flow-fdg-v2/runs/rolling_development/alpha360__csi300__flow_fdg_v2__drift_shift2y_longbudget_allckpt_v1__seed11/checkpoints/best_valid.pt",
+      "file_exists": true,
+      "expected_sha256": "e8839c6e07ebd6b7f54a87a4be2673f9c4d3cacd998515b66a32e30b2cf8679c",
+      "bytes": 1970054,
+      "actual_sha256": "e8839c6e07ebd6b7f54a87a4be2673f9c4d3cacd998515b66a32e30b2cf8679c",
+      "checksum_match": true,
+      "run_manifest_sha256_match": true,
+      "cell": "alpha360_csi300",
+      "checkpoint": "checkpoints/alpha360_csi300.pt",
+      "export_bytes": 654832,
+      "export_sha256": "fe0ed8e213b8809c05fba6a32ae4c48ba6a8e4420c022784d1c3158ec61171d9",
+      "config": "code/configs/alpha360_csi300/runtime.json",
+      "model_state_bitwise_equal_to_source": true
+    },
+    {
+      "job": "alpha360__csi500__flow_fdg_v2__drift_shift2y_longbudget_allckpt_v1__seed10",
+      "seed": 10,
+      "handler": "Alpha360",
+      "market": "csi500",
+      "valid_ic": 0.02027421487461917,
+      "epoch": 75,
+      "test_ic": 0.013623867017162545,
+      "test_rankic": 0.039178201194604585,
+      "run_status": "done",
+      "evidence_directory": "/root/autodl-tmp/meta-fdg/runs/final_drift/alpha360__csi500__flow_fdg_v2__drift_shift2y_longbudget_allckpt_v1__seed10",
+      "recorded_checkpoint": "/root/autodl-tmp/flow-fdg-v2/runs/rolling_development/alpha360__csi500__flow_fdg_v2__drift_shift2y_longbudget_allckpt_v1__seed10/checkpoints/best_valid.pt",
+      "splits": {
+        "test": [
+          "2024-01-01",
+          "2025-12-31"
+        ],
+        "train": [
+          "2018-01-01",
+          "2022-12-31"
+        ],
+        "valid": [
+          "2023-01-01",
+          "2023-12-31"
+        ]
+      },
+      "data_id": "cn_daily_release_20260712",
+      "label": "Ref($close, -2) / Ref($close, -1) - 1",
+      "lookback": 20,
+      "archive_path": "/root/autodl-tmp/se-fdg-checkpoints/origins/flow-fdg-v2/runs/rolling_development/alpha360__csi500__flow_fdg_v2__drift_shift2y_longbudget_allckpt_v1__seed10/checkpoints/best_valid.pt",
+      "file_exists": true,
+      "expected_sha256": "c0c32bc2aec9e9bf6cb3e205ce1238af80f36cce567fb8052d8d86bafe5d8b93",
+      "bytes": 1970054,
+      "actual_sha256": "c0c32bc2aec9e9bf6cb3e205ce1238af80f36cce567fb8052d8d86bafe5d8b93",
+      "checksum_match": true,
+      "run_manifest_sha256_match": true,
+      "cell": "alpha360_csi500",
+      "checkpoint": "checkpoints/alpha360_csi500.pt",
+      "export_bytes": 654832,
+      "export_sha256": "9b6fa62bddf292c270f0b2b3af6248c8fa312ba17093422b89383fcff5c9b728",
+      "config": "code/configs/alpha360_csi500/runtime.json",
+      "model_state_bitwise_equal_to_source": true
+    }
+  ],
+  "datasets": [
+    {
+      "id": "cn_daily_release_20260712",
+      "path": "data/cn_daily_release_20260712",
+      "region": "cn",
+      "markets": [
+        "csi300",
+        "csi500"
+      ],
+      "source": "/root/autodl-tmp/meta-fdg/data/raw/cn_daily_release_20260712",
+      "file_count": 61189,
+      "file_bytes": 714680233,
+      "hardlinked_files": 61188,
+      "hardlinked_bytes": 714679300,
+      "calendar_start": "2000-01-04",
+      "calendar_end": "2026-07-10",
+      "calendar_sha256": "4b79b8c8276777898ad0e6b7a4c381a024db9c6d99d0e31e43ca926f75c2cf81",
+      "layout": "Qlib calendars/instruments/features only; download source archives and derived caches excluded"
+    },
+    {
+      "id": "us_yahoo_sp500_pit_ohlcv_20260723",
+      "path": "data/us_yahoo_sp500_pit_ohlcv_20260723",
+      "region": "us",
+      "markets": [
+        "sp500_pit"
+      ],
+      "source": "/root/autodl-tmp/meta-fdg/data/raw/us_yahoo_sp500_pit_ohlcv_20260723",
+      "file_count": 5213,
+      "file_bytes": 55782054,
+      "hardlinked_files": 5211,
+      "hardlinked_bytes": 55208647,
+      "calendar_start": "2014-01-02",
+      "calendar_end": "2026-01-09",
+      "calendar_sha256": "5125b40f110e96d9b99cf9bf4fa0606ee0027226b45d2937cf75280ecf084c9e",
+      "layout": "Qlib calendars/instruments/features only; download source archives and derived caches excluded"
+    }
+  ],
+  "runtime_source_files": [
+    {
+      "bundle_path": "code/src/meta_fdg/__init__.py",
+      "original_path": "/root/autodl-tmp/meta-fdg/src/meta_fdg/__init__.py",
+      "sha256": "925c3d7d2d08fc1f8d64c812608c4a6f3ff4218fc47d615c4feb6462106e762c"
+    },
+    {
+      "bundle_path": "code/src/meta_fdg/baselines/__init__.py",
+      "original_path": "/root/autodl-tmp/meta-fdg/src/meta_fdg/baselines/__init__.py",
+      "sha256": "988eacd36d7cb9667490f67295a42d58dc6c4aec2ea25a252920f11846301c8d"
+    },
+    {
+      "bundle_path": "code/src/meta_fdg/baselines/master_qlib.py",
+      "original_path": "/root/autodl-tmp/meta-fdg/src/meta_fdg/baselines/master_qlib.py",
+      "sha256": "d4985de490b53a85bb1d1b5c831ae2d2a37bbce6fe39b82124bc0d08838449f7"
+    },
+    {
+      "bundle_path": "code/src/meta_fdg/baselines/qlib_workflow.py",
+      "original_path": "/root/autodl-tmp/meta-fdg/src/meta_fdg/baselines/qlib_workflow.py",
+      "sha256": "e9c3cbfdad797a6429f6e6815c7768c683af75a135b8414e9cebcdd6878c3735"
+    },
+    {
+      "bundle_path": "code/src/meta_fdg/data/__init__.py",
+      "original_path": "/root/autodl-tmp/meta-fdg/src/meta_fdg/data/__init__.py",
+      "sha256": "6ee2a4012476fd51b126f59e8f877059c25907d06a16d1a3354455391eb81ec6"
+    },
+    {
+      "bundle_path": "code/src/meta_fdg/data/compact_qlib.py",
+      "original_path": "/root/autodl-tmp/meta-fdg/src/meta_fdg/data/compact_qlib.py",
+      "sha256": "04141e86dcd24b34055b1ea17122b026080f94c438ceeb14ec27e043ae29666b"
+    },
+    {
+      "bundle_path": "code/src/meta_fdg/data/temporal_cross_section.py",
+      "original_path": "/root/autodl-tmp/meta-fdg/src/meta_fdg/data/temporal_cross_section.py",
+      "sha256": "4dc6e42beae545098ad5f7d0e2509e4d90e7379dac9f202777d0d28ff60f1ff3"
+    },
+    {
+      "bundle_path": "code/src/meta_fdg/data/us_ohlcv_handler.py",
+      "original_path": "/root/autodl-tmp/meta-fdg/src/meta_fdg/data/us_ohlcv_handler.py",
+      "sha256": "09ccda4f0c0fde6ab06dc46bd840be4dcd6ba1446ea4cbdfe1ac6e49148901af"
+    },
+    {
+      "bundle_path": "code/src/meta_fdg/models/__init__.py",
+      "original_path": "/root/autodl-tmp/meta-fdg/src/meta_fdg/models/__init__.py",
+      "sha256": "5de7e2fa29cb0ef78e2a969be9f0c01ea01777e21fa0356754c53af12809485c"
+    },
+    {
+      "bundle_path": "code/src/meta_fdg/models/b_flow.py",
+      "original_path": "/root/autodl-tmp/meta-fdg/src/meta_fdg/models/b_flow.py",
+      "sha256": "b443b0d6d3aebc30ffd849dce00f0d1dd1a257d02472681b74c01f96e3a93b82"
+    },
+    {
+      "bundle_path": "code/src/meta_fdg/models/concept_temporal.py",
+      "original_path": "/root/autodl-tmp/meta-fdg/src/meta_fdg/models/concept_temporal.py",
+      "sha256": "62133a289d600d8bf7df0d4eaff28d5cd70476a71ba7f04b4ad3ab0277031ab5"
+    },
+    {
+      "bundle_path": "code/src/meta_fdg/models/directed_graph.py",
+      "original_path": "/root/autodl-tmp/meta-fdg/src/meta_fdg/models/directed_graph.py",
+      "sha256": "a4d552fabdfa7db8c735f1525a6c166b72caaa57b92e0be484cd7f8b8f1ee73d"
+    },
+    {
+      "bundle_path": "code/src/meta_fdg/models/dynamic_route.py",
+      "original_path": "/root/autodl-tmp/meta-fdg/src/meta_fdg/models/dynamic_route.py",
+      "sha256": "276c0ef2a1fd4ca488d39d4aad5149f511bffe0e3ad534332d3b4fcda677b939"
+    },
+    {
+      "bundle_path": "code/src/meta_fdg/models/factor_axis_lstm.py",
+      "original_path": "/root/autodl-tmp/meta-fdg/src/meta_fdg/models/factor_axis_lstm.py",
+      "sha256": "28f63e190d652c2004bafec3bd9ab6b320d9f995386111d23b69d847a4fed1c0"
+    },
+    {
+      "bundle_path": "code/src/meta_fdg/models/flow_fdg.py",
+      "original_path": "/root/autodl-tmp/meta-fdg/src/meta_fdg/models/flow_fdg.py",
+      "sha256": "4952a39c5ec7fe57f93ff4b0ac52eeb7fbddefbbe4e54fd1f0b72a221045fa2c"
+    },
+    {
+      "bundle_path": "code/src/meta_fdg/models/hierarchical_multiresolution.py",
+      "original_path": "/root/autodl-tmp/meta-fdg/src/meta_fdg/models/hierarchical_multiresolution.py",
+      "sha256": "a10d814eb7d27514b7f458f20169dea9adf31ed090765711a0f4843a01b523d8"
+    },
+    {
+      "bundle_path": "code/src/meta_fdg/models/hmc_flow.py",
+      "original_path": "/root/autodl-tmp/meta-fdg/src/meta_fdg/models/hmc_flow.py",
+      "sha256": "f7c4bac2daa339d475752fe94c46c8348150f3f2dacd9c63dbec00b4138a6810"
+    },
+    {
+      "bundle_path": "code/src/meta_fdg/models/pattern_routed_source.py",
+      "original_path": "/root/autodl-tmp/meta-fdg/src/meta_fdg/models/pattern_routed_source.py",
+      "sha256": "77785ef293f79791273c02f80e9aa5b43a8f34f2abff1f613fd854b7e930ccd1"
+    },
+    {
+      "bundle_path": "code/src/meta_fdg/models/predictive_cross_lag_observer.py",
+      "original_path": "/root/autodl-tmp/meta-fdg/src/meta_fdg/models/predictive_cross_lag_observer.py",
+      "sha256": "015c03f94a15d376ef7d335006c6a0e29c7c03d17fd0297b7e8efb5744d3d68a"
+    },
+    {
+      "bundle_path": "code/src/meta_fdg/models/regressor.py",
+      "original_path": "/root/autodl-tmp/meta-fdg/src/meta_fdg/models/regressor.py",
+      "sha256": "158e8d26703e6fa416a393a25f6dc9da2b6c218d16b82eeff7dea4c6e54d3adf"
+    },
+    {
+      "bundle_path": "code/src/meta_fdg/models/state_attentive.py",
+      "original_path": "/root/autodl-tmp/meta-fdg/src/meta_fdg/models/state_attentive.py",
+      "sha256": "c237833e623e4e142b3d4a79602e730aa786c414752ed9d943945da6cac3e053"
+    },
+    {
+      "bundle_path": "code/src/meta_fdg/models/stateful_flow.py",
+      "original_path": "/root/autodl-tmp/meta-fdg/src/meta_fdg/models/stateful_flow.py",
+      "sha256": "19d8ce782c0e7e2fa5a03c86fb3129d6140bc1dc3cb8114c5358cda6c8707137"
+    },
+    {
+      "bundle_path": "code/src/meta_fdg/models/subspace_posterior_flow.py",
+      "original_path": "/root/autodl-tmp/meta-fdg/src/meta_fdg/models/subspace_posterior_flow.py",
+      "sha256": "8f30d9ebf7c7bb7f642e8e1f2c89f9b8a2753c80ebf3e3c9a61fe47fc805bf62"
+    },
+    {
+      "bundle_path": "code/src/meta_fdg/models/support_modulator.py",
+      "original_path": "/root/autodl-tmp/meta-fdg/src/meta_fdg/models/support_modulator.py",
+      "sha256": "ca31ccb09e35bcc54080300833533bb083a73db8932fd358bd52ed1ba1373f85"
+    },
+    {
+      "bundle_path": "code/src/meta_fdg/models/tra_core_source.py",
+      "original_path": "/root/autodl-tmp/meta-fdg/src/meta_fdg/models/tra_core_source.py",
+      "sha256": "c5d4b575f89a2bb2a4a6aee364b4abbdcdfdbf8efff40a7922d77d2648c3c91d"
+    },
+    {
+      "bundle_path": "code/src/meta_fdg/training/__init__.py",
+      "original_path": "/root/autodl-tmp/meta-fdg/src/meta_fdg/training/__init__.py",
+      "sha256": "08100c81af0fd2ee998cfb835504b5387d548982ff9c40985eb4b021d7209a89"
+    },
+    {
+      "bundle_path": "code/src/meta_fdg/training/flow_fdg.py",
+      "original_path": "/root/autodl-tmp/meta-fdg/src/meta_fdg/training/flow_fdg.py",
+      "sha256": "52420698f40057d9b41cedb041ae45acbf1ed83b702428266f5ad6eac0fffb3e"
+    },
+    {
+      "bundle_path": "code/src/meta_fdg/training/metrics.py",
+      "original_path": "/root/autodl-tmp/meta-fdg/src/meta_fdg/training/metrics.py",
+      "sha256": "994a3705d8330a18cdc7e153f36ad9955f38edd0e081375a245fcb2bf43425a1"
+    },
+    {
+      "bundle_path": "code/src/meta_fdg/training/run_io.py",
+      "original_path": "/root/autodl-tmp/meta-fdg/src/meta_fdg/training/run_io.py",
+      "sha256": "f6119719e7627899e656ffe5dd76730aa25a6ff223ced73a9bb288d1f93396cf"
+    },
+    {
+      "bundle_path": "code/src/meta_fdg/training/stateful_flow.py",
+      "original_path": "/root/autodl-tmp/meta-fdg/src/meta_fdg/training/stateful_flow.py",
+      "sha256": "4ed805f8183e1b83825630f89407864d615cf420b7a1a049406c729db9bf38cb"
+    },
+    {
+      "bundle_path": "code/scripts/run_flow_fdg.py",
+      "original_path": "/root/autodl-tmp/meta-fdg/scripts/run_flow_fdg.py",
+      "sha256": "e70c79e2ea9939776617e995b321f9506373216bd4bb89f095d1f0ff54e81d14"
+    },
+    {
+      "bundle_path": "code/scripts/materialize_compact_qlib.py",
+      "original_path": "/root/autodl-tmp/meta-fdg/scripts/materialize_compact_qlib.py",
+      "sha256": "6124009d8fe41251d21753b9b13a7eff58be5f1c7efce5bc926ee586421d39ef"
+    }
+  ],
+  "file_sha256": {
+    "README.md": "ef0654a43f7f6c899a1743e798a2619e14e118a98739a99eaa414b3261e392b9",
+    "checkpoints/alpha158_csi300.pt": "df05bc7764d6b3d498e7f331bba5e21eeba1e0815b652bfcac3a59e94b7db0cd",
+    "checkpoints/alpha158_csi500.pt": "326eeeb91393a21f37e6af964b0b309c0441dbb87053380e0aebaead95c13df3",
+    "checkpoints/alpha158us_sp500_pit.pt": "47f5c0427190fc0e396530d1c76a28d180247d88c9112d7fc0e08bd0b3add2bb",
+    "checkpoints/alpha360_csi300.pt": "fe0ed8e213b8809c05fba6a32ae4c48ba6a8e4420c022784d1c3158ec61171d9",
+    "checkpoints/alpha360_csi500.pt": "9b6fa62bddf292c270f0b2b3af6248c8fa312ba17093422b89383fcff5c9b728",
+    "code/ENVIRONMENT.json": "b496d8eded2a62e4089ce0d45beb0e647723c9af0053986549f31dee45888f3f",
+    "code/configs/alpha158_csi300/metrics_test_summary.json": "81c56f10901e80506e216ace355b9c1530c86d456b61fdd7ee24480618e33839",
+    "code/configs/alpha158_csi300/metrics_valid_summary.json": "6bc1693ef764afd08cb255672cef59d615e88872c521cf7b9bb9d58323641a76",
+    "code/configs/alpha158_csi300/model.json": "a67f1ecc7d4ef115d79390d42633bb9fcd6e1dd9ea5d0c48a2c6840b101de0cf",
+    "code/configs/alpha158_csi300/original.json": "e4dc2e4e75f331520b2ee398fb8ac54849c8a931ec34656a84bd56d33e5c8817",
+    "code/configs/alpha158_csi300/runtime.json": "fae8255ac5f7525d9d7122afd306d36cae38e42c9ab375863c7293346f4aee20",
+    "code/configs/alpha158_csi500/metrics_test_summary.json": "966b909093028d42c2d4bd8fe38dcb955854df9a3660cba7d701dee837105612",
+    "code/configs/alpha158_csi500/metrics_valid_summary.json": "68bf9af32ff75bc7e57c8c664948744b8555d7471dbda8beede70b58d0414490",
+    "code/configs/alpha158_csi500/model.json": "a67f1ecc7d4ef115d79390d42633bb9fcd6e1dd9ea5d0c48a2c6840b101de0cf",
+    "code/configs/alpha158_csi500/original.json": "cbb185ecefa346c2857febaca29770af9bf155e22367302802a121795fd6f9b0",
+    "code/configs/alpha158_csi500/runtime.json": "0a5f14c606ff1a94d380b8d08518b8a60bfd9b3fe51b1517e04a0aa1dae20826",
+    "code/configs/alpha158us_sp500_pit/metrics_test_summary.json": "66d81a4443c2e9ac9c52a4db4fe19eaa073283b68faafb523d09f50216751a30",
+    "code/configs/alpha158us_sp500_pit/metrics_valid_summary.json": "4b83b8f7b4f670320a7a3a9524d107fbdd77289d2643e07ee7d6d23fa38f815b",
+    "code/configs/alpha158us_sp500_pit/model.json": "a67f1ecc7d4ef115d79390d42633bb9fcd6e1dd9ea5d0c48a2c6840b101de0cf",
+    "code/configs/alpha158us_sp500_pit/original.json": "0a4b3fb05c2bbc51a65e0a7891ec7f6d4357bc4cdbc93c39c35ee86026bfe80a",
+    "code/configs/alpha158us_sp500_pit/runtime.json": "5f718f75170379045773edeaec137cc1a0b22f8e2409cbd809dfb0bb7cc32bc6",
+    "code/configs/alpha360_csi300/metrics_test_summary.json": "3f51ce1339b8e0e1bccb64a570faddb26202ea5ce2e4f2bfacd1758a6b48f30c",
+    "code/configs/alpha360_csi300/metrics_valid_summary.json": "e20ce43f5564cefea299bb3e824460d3d79a5eb45b12259990762f926de1960a",
+    "code/configs/alpha360_csi300/model.json": "a67f1ecc7d4ef115d79390d42633bb9fcd6e1dd9ea5d0c48a2c6840b101de0cf",
+    "code/configs/alpha360_csi300/original.json": "dd0d4eeffdf2d9636dccb23d00509179b848fdbb3d7f5ff6799b10c08548c63f",
+    "code/configs/alpha360_csi300/runtime.json": "8bc81c2ac364250d5579a0981333277c2e70a7f6fc9d7cc359f2f6edf981dfa6",
+    "code/configs/alpha360_csi500/metrics_test_summary.json": "67f757fbb01d4e2d8e2b398809c96d2c24d836e5d3040670213d3af429ceb9f3",
+    "code/configs/alpha360_csi500/metrics_valid_summary.json": "2819f323fbab06d8cd8d747e414f1bec55f63b1bcf2c57c8b5391908b570a04b",
+    "code/configs/alpha360_csi500/model.json": "a67f1ecc7d4ef115d79390d42633bb9fcd6e1dd9ea5d0c48a2c6840b101de0cf",
+    "code/configs/alpha360_csi500/original.json": "48bc6a142d4aa591757f819f5212ad0432380c5e23a10529585e9b8cc4be9ad7",
+    "code/configs/alpha360_csi500/runtime.json": "58de7df28d7d2d303b9417a96966cd6b29982710d274b121af63fe9d508c4412",
+    "code/load_checkpoint.py": "d248d440d647cbf6a18728a7f1470abe0fc1c73081e887b4f763ceb7c45b7a3c",
+    "code/requirements.txt": "c80cd15f98e477e67789666370eeb737d9add5618abed7a7451ed43222967f4d",
+    "code/scripts/materialize_compact_qlib.py": "6124009d8fe41251d21753b9b13a7eff58be5f1c7efce5bc926ee586421d39ef",
+    "code/scripts/run_flow_fdg.py": "e70c79e2ea9939776617e995b321f9506373216bd4bb89f095d1f0ff54e81d14",
+    "code/src/meta_fdg/__init__.py": "925c3d7d2d08fc1f8d64c812608c4a6f3ff4218fc47d615c4feb6462106e762c",
+    "code/src/meta_fdg/baselines/__init__.py": "988eacd36d7cb9667490f67295a42d58dc6c4aec2ea25a252920f11846301c8d",
+    "code/src/meta_fdg/baselines/master_qlib.py": "d4985de490b53a85bb1d1b5c831ae2d2a37bbce6fe39b82124bc0d08838449f7",
+    "code/src/meta_fdg/baselines/qlib_workflow.py": "e9c3cbfdad797a6429f6e6815c7768c683af75a135b8414e9cebcdd6878c3735",
+    "code/src/meta_fdg/data/__init__.py": "6ee2a4012476fd51b126f59e8f877059c25907d06a16d1a3354455391eb81ec6",
+    "code/src/meta_fdg/data/compact_qlib.py": "04141e86dcd24b34055b1ea17122b026080f94c438ceeb14ec27e043ae29666b",
+    "code/src/meta_fdg/data/temporal_cross_section.py": "4dc6e42beae545098ad5f7d0e2509e4d90e7379dac9f202777d0d28ff60f1ff3",
+    "code/src/meta_fdg/data/us_ohlcv_handler.py": "09ccda4f0c0fde6ab06dc46bd840be4dcd6ba1446ea4cbdfe1ac6e49148901af",
+    "code/src/meta_fdg/models/__init__.py": "5de7e2fa29cb0ef78e2a969be9f0c01ea01777e21fa0356754c53af12809485c",
+    "code/src/meta_fdg/models/b_flow.py": "b443b0d6d3aebc30ffd849dce00f0d1dd1a257d02472681b74c01f96e3a93b82",
+    "code/src/meta_fdg/models/concept_temporal.py": "62133a289d600d8bf7df0d4eaff28d5cd70476a71ba7f04b4ad3ab0277031ab5",
+    "code/src/meta_fdg/models/directed_graph.py": "a4d552fabdfa7db8c735f1525a6c166b72caaa57b92e0be484cd7f8b8f1ee73d",
+    "code/src/meta_fdg/models/dynamic_route.py": "276c0ef2a1fd4ca488d39d4aad5149f511bffe0e3ad534332d3b4fcda677b939",
+    "code/src/meta_fdg/models/factor_axis_lstm.py": "28f63e190d652c2004bafec3bd9ab6b320d9f995386111d23b69d847a4fed1c0",
+    "code/src/meta_fdg/models/flow_fdg.py": "4952a39c5ec7fe57f93ff4b0ac52eeb7fbddefbbe4e54fd1f0b72a221045fa2c",
+    "code/src/meta_fdg/models/hierarchical_multiresolution.py": "a10d814eb7d27514b7f458f20169dea9adf31ed090765711a0f4843a01b523d8",
+    "code/src/meta_fdg/models/hmc_flow.py": "f7c4bac2daa339d475752fe94c46c8348150f3f2dacd9c63dbec00b4138a6810",
+    "code/src/meta_fdg/models/pattern_routed_source.py": "77785ef293f79791273c02f80e9aa5b43a8f34f2abff1f613fd854b7e930ccd1",
+    "code/src/meta_fdg/models/predictive_cross_lag_observer.py": "015c03f94a15d376ef7d335006c6a0e29c7c03d17fd0297b7e8efb5744d3d68a",
+    "code/src/meta_fdg/models/regressor.py": "158e8d26703e6fa416a393a25f6dc9da2b6c218d16b82eeff7dea4c6e54d3adf",
+    "code/src/meta_fdg/models/state_attentive.py": "c237833e623e4e142b3d4a79602e730aa786c414752ed9d943945da6cac3e053",
+    "code/src/meta_fdg/models/stateful_flow.py": "19d8ce782c0e7e2fa5a03c86fb3129d6140bc1dc3cb8114c5358cda6c8707137",
+    "code/src/meta_fdg/models/subspace_posterior_flow.py": "8f30d9ebf7c7bb7f642e8e1f2c89f9b8a2753c80ebf3e3c9a61fe47fc805bf62",
+    "code/src/meta_fdg/models/support_modulator.py": "ca31ccb09e35bcc54080300833533bb083a73db8932fd358bd52ed1ba1373f85",
+    "code/src/meta_fdg/models/tra_core_source.py": "c5d4b575f89a2bb2a4a6aee364b4abbdcdfdbf8efff40a7922d77d2648c3c91d",
+    "code/src/meta_fdg/training/__init__.py": "08100c81af0fd2ee998cfb835504b5387d548982ff9c40985eb4b021d7209a89",
+    "code/src/meta_fdg/training/flow_fdg.py": "52420698f40057d9b41cedb041ae45acbf1ed83b702428266f5ad6eac0fffb3e",
+    "code/src/meta_fdg/training/metrics.py": "994a3705d8330a18cdc7e153f36ad9955f38edd0e081375a245fcb2bf43425a1",
+    "code/src/meta_fdg/training/run_io.py": "f6119719e7627899e656ffe5dd76730aa25a6ff223ced73a9bb288d1f93396cf",
+    "code/src/meta_fdg/training/stateful_flow.py": "4ed805f8183e1b83825630f89407864d615cf420b7a1a049406c729db9bf38cb",
+    "code/verify_bundle.py": "75ffe58be015efc854192d049126dd557428d2bcedad413027eb3b87ca25b541",
+    "data/cn_daily_release_20260712/SOURCE_MANIFEST.json": "d5660dfbbb0bd19fc72e36aa91b973e9beb7bd2a7dc7886607cb6517b86ca130",
+    "data/us_yahoo_sp500_pit_ohlcv_20260723/US_DATA_READINESS_REPORT.json": "d4d1fd61bec7045e25b23f43dacfedb837c83cfb1ece0da02dbc3d5bc984ce9f",
+    "data/us_yahoo_sp500_pit_ohlcv_20260723/release_manifest.json": "42800a3d0823d0e2e77ea01717228210e45cabd12ebdb9ff44de9bada68990a7",
+    "run.sh": "6a95bd4d5a85928532f98c46b1377e9db5905c4de7978456506aa7108b3051f4",
+    ".gitignore": "9833b34a46ac11fca6f12ab28c05bb699b5d2004d439f7062ca4dd08dad139bd",
+    ".gitattributes": "a01dc3b740f45ecf9e80c885a2275467b92c7a453ddcdfa5124fdd4bd9446b8c"
+  },
+  "size": {
+    "runtime_code_files": 32,
+    "runtime_source_bytes": 710848,
+    "checkpoint_bytes": 2808427,
+    "hardlinked_data_bytes": 769887947
+  },
+  "publication": {
+    "repository": "https://github.com/jiajhe/DRIFT",
+    "branch": "main",
+    "includes_data": true,
+    "git_lfs_required": false
+  }
+}

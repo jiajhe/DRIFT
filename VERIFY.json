@@ -1,0 +1,64 @@
+{
+  "status": "pass",
+  "bundle": "/root/autodl-tmp/drift-minimal",
+  "hashed_files": 71,
+  "models": [
+    {
+      "cell": "alpha158_csi300",
+      "strict_state_load": true,
+      "finite_forward": true,
+      "feature_dim": 158,
+      "epoch": 18
+    },
+    {
+      "cell": "alpha158_csi500",
+      "strict_state_load": true,
+      "finite_forward": true,
+      "feature_dim": 158,
+      "epoch": 90
+    },
+    {
+      "cell": "alpha158us_sp500_pit",
+      "strict_state_load": true,
+      "finite_forward": true,
+      "feature_dim": 157,
+      "epoch": 56
+    },
+    {
+      "cell": "alpha360_csi300",
+      "strict_state_load": true,
+      "finite_forward": true,
+      "feature_dim": 360,
+      "epoch": 87
+    },
+    {
+      "cell": "alpha360_csi500",
+      "strict_state_load": true,
+      "finite_forward": true,
+      "feature_dim": 360,
+      "epoch": 75
+    }
+  ],
+  "data": [
+    {
+      "dataset": "cn_daily_release_20260712",
+      "market": "csi300",
+      "sample_rows": 2,
+      "raw_fields_and_label_readable": true
+    },
+    {
+      "dataset": "cn_daily_release_20260712",
+      "market": "csi500",
+      "sample_rows": 2,
+      "raw_fields_and_label_readable": true
+    },
+    {
+      "dataset": "us_yahoo_sp500_pit_ohlcv_20260723",
+      "market": "sp500_pit",
+      "sample_rows": 2,
+      "raw_fields_and_label_readable": true
+    }
+  ],
+  "full_test_metrics_recomputed": false,
+  "training_started": false
+}
