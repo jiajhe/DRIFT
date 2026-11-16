@@ -1,4 +1,4 @@
-torch==2.8.0+cu128
+torch==2.8.0
 numpy==1.26.4
 pandas==2.3.3
 scipy==1.17.1

@@ -956,7 +956,6 @@
       }
     ]
   },
-  "provider": "/Users/hejiajun/Desktop/se-fdg/data/raw/us_yahoo_sp500_pit_ohlcv_20260723",
   "schema": "meta_fdg_us_provider_audit_v1",
   "status": "pass"
 }

@@ -56,7 +56,7 @@ def main():
     for name, module in tuple(sys.modules.items()):
         if name.startswith("meta_fdg") and getattr(module,"__file__",None):
             assert Path(module.__file__).resolve().is_relative_to((ROOT/"code/src").resolve()), name
-    result={"status":"pass","bundle":str(ROOT),"hashed_files":checked,"models":rows,"data":data_results,
+    result={"status":"pass","hashed_files":checked,"models":rows,"data":data_results,
             "full_test_metrics_recomputed":False,"training_started":False}
     if args.output:
         args.output.parent.mkdir(parents=True, exist_ok=True)

@@ -1,7 +1,6 @@
 {
   "status": "pass",
-  "bundle": "/root/autodl-tmp/drift-minimal",
-  "hashed_files": 71,
+  "hashed_files": 68,
   "models": [
     {
       "cell": "alpha158_csi300",

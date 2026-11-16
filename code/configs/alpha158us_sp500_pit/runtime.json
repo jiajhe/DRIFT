@@ -1,14 +1,4 @@
 {
-  "attempt": {
-    "attempt_id": "drift_long_epoch_allckpt_75cell_20260725__alpha158usohlcv__sp500_pit__seed12__attempt0",
-    "authorization": "User explicitly approved launching all five data cells and seeds 0-14 with the prior long-epoch budget on 2026-07-25.",
-    "campaign_id": "drift_long_epoch_allckpt_75cell_20260725",
-    "change_from_parent": "Only expand the stage ceilings and validation patience/minimum epochs, archive every executed epoch with optimizer/RNG state, and use the audited compact execution path where available. Model, loss, labels, split, seed, normalization, and reporting stay fixed.",
-    "hypothesis": "The historically used 60/20/40 epoch ceiling with validation-only early stopping may improve DRIFT relative to the short 12/5/8 budget.",
-    "parent_attempts": [
-      "us_sp500_drift_a18_csi_matched_15seed_20260724_seed0_attempt0"
-    ]
-  },
   "comparison_contract": {
     "intentionally_us_specific_fields": [
       "data_id",
@@ -116,54 +106,8 @@
     "valid",
     "test"
   ],
-  "implementation": {
-    "csi_reference_protocol_document": "docs/FLOW_FDG_V2_PROTOCOL.md",
-    "model_protocol_document": "docs/FLOW_FDG_V2_PROTOCOL.md",
-    "protocol_document": "docs/US_SP500_ALPHA158_PROTOCOL.md",
-    "runner_revision": "flow_fdg_v2_runner_20260720_nonnegative_fast_strength_direction_smooth__us_sp500_pit_external_v1"
-  },
   "job_id": "alpha158usohlcv__sp500_pit__drift_a18_csi_matched_longbudget_allckpt_v1__seed12",
   "lock_id": "shift2y-shorttest-v1-20260721",
-  "long_epoch_provenance": {
-    "budget": [
-      {
-        "early_stop_patience": 12,
-        "epochs": 60,
-        "minimum_epochs_before_stop": 15,
-        "name": "local",
-        "selection_variant": "local"
-      },
-      {
-        "early_stop_patience": 0,
-        "epochs": 20,
-        "minimum_epochs_before_stop": 0,
-        "name": "flow_warm",
-        "selection_variant": "full"
-      },
-      {
-        "early_stop_patience": 12,
-        "epochs": 40,
-        "minimum_epochs_before_stop": 15,
-        "name": "joint",
-        "selection_variant": "full"
-      }
-    ],
-    "campaign_id": "drift_long_epoch_allckpt_75cell_20260725",
-    "checkpoint_policy": {
-      "archive_every_executed_epoch": true,
-      "includes_model": true,
-      "includes_optimizer": true,
-      "includes_rng_state": true,
-      "selection_split": "valid",
-      "test_per_epoch": false
-    },
-    "historical_budget_config": "configs/experiments/flow_fdg_v2/compact_gru64_slow_direction_equal_joint_lr_seed5.json",
-    "historical_budget_config_sha256": "71e21972abdf31259306b318ad12d65224bffe30eeb9a14b787a1690b49a114b",
-    "parent_config": "configs/experiments/us_sp500_pit_alpha158_ohlcv_csi_matched_v1/drift_a18/alpha158usohlcv__sp500_pit__drift_a18_csi_matched__seed0.json",
-    "parent_config_sha256": "1a889077a52a4399a02176dd8a8aa34d455ec04474c042f693d2afda2e0df555",
-    "runner_sha256_at_generation": "28950c53a47c898c34e69a7f190bd88ade503f4b260eb821681b25ffa07175b4",
-    "schema": "drift_long_epoch_allckpt_v1"
-  },
   "loss": {
     "activity_balance_weight": 0.01,
     "activity_target": 0.5,

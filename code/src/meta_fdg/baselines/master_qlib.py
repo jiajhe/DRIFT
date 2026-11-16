@@ -20,7 +20,7 @@ from qlib.data.dataset.handler import DataHandlerLP
 MASTER_REPOSITORY = "https://github.com/SJTU-DMTai/MASTER"
 MASTER_REVISION = "de8f58557096abde4216a701b35fc4368158d111"
 DEFAULT_MASTER_SOURCE_ROOT = Path(
-    os.environ.get("META_FDG_MASTER_SOURCE", "/root/autodl-tmp/baseline_refs/MASTER")
+    os.environ.get("META_FDG_MASTER_SOURCE", str(Path(__file__).resolve().parents[4] / "third_party" / "MASTER"))
 )
 MARKET_CODES = ("SH000300", "SH000905", "SH000906")
 MARKET_WINDOWS = (5, 10, 20, 30, 60)

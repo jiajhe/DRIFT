@@ -29,5 +29,5 @@ def main():
     model, config, checkpoint = load_model(args.cell, args.device)
     print(json.dumps({"cell": args.cell, "epoch": checkpoint["epoch"], "feature_dim": checkpoint["feature_dim"],
         "lookback": checkpoint["lookback"], "parameters": sum(p.numel() for p in model.parameters()),
-        "provider": config["data"]["provider_path"], "loaded": True}, indent=2))
+        "provider": str(Path(config["data"]["provider_path"]).relative_to(ROOT)), "loaded": True}, indent=2))
 if __name__ == "__main__": main()

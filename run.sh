@@ -1,8 +1,17 @@
 #!/usr/bin/env bash
 set -euo pipefail
 ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
-PY="${DRIFT_PYTHON:-/root/autodl-tmp/meta-fdg/.venv/bin/python}"
-if [[ ! -x "$PY" ]]; then PY="$(command -v python3)"; fi
+PY="${DRIFT_PYTHON:-}"
+if [[ -z "$PY" ]]; then
+  if [[ -x "$ROOT/.venv/bin/python" ]]; then
+    PY="$ROOT/.venv/bin/python"
+  elif command -v python3 >/dev/null 2>&1; then
+    PY="$(command -v python3)"
+  else
+    printf '%s\n' 'Python 3 is required. Install dependencies from code/requirements.txt.' >&2
+    exit 1
+  fi
+fi
 export PYTHONPATH="$ROOT/code/src:$ROOT/code"
 export PYTHONDONTWRITEBYTECODE=1
 export OMP_NUM_THREADS="${OMP_NUM_THREADS:-1}"

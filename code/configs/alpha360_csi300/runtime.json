@@ -1,22 +1,4 @@
 {
-  "acceleration_provenance": {
-    "cache_root": "../cache/compact",
-    "parity_report": "/root/autodl-tmp/meta-fdg/runs/_launch/accelerated_4cell_15seed_20260723/compact_parity_report_attempt2_config_immutability_fix.json",
-    "parity_report_sha256": "22868093ec1e2b43fcc22e087fdb1605a48adc19b1a4e55d61edf45dda9ac8e4",
-    "schema": "meta_fdg_compact_acceleration_v1",
-    "test_loaded_only_during_reporting": true,
-    "windows_materialized_on_disk": false
-  },
-  "attempt": {
-    "attempt_id": "drift_long_epoch_allckpt_75cell_20260725__alpha360__csi300__seed11__attempt0",
-    "authorization": "User explicitly approved launching all five data cells and seeds 0-14 with the prior long-epoch budget on 2026-07-25.",
-    "campaign_id": "drift_long_epoch_allckpt_75cell_20260725",
-    "change_from_parent": "Only expand the stage ceilings and validation patience/minimum epochs, archive every executed epoch with optimizer/RNG state, and use the audited compact execution path where available. Model, loss, labels, split, seed, normalization, and reporting stay fixed.",
-    "hypothesis": "The historically used 60/20/40 epoch ceiling with validation-only early stopping may improve DRIFT relative to the short 12/5/8 budget.",
-    "parent_attempts": [
-      "shift2y_shorttest_a18_slow_direction_seed5__retry1_lockfix__retry2_temporal_alpha360fix"
-    ]
-  },
   "data": {
     "cache_root": "../cache/handlers",
     "context_start_time": "2017-07-01",
@@ -93,55 +75,8 @@
     "valid",
     "test"
   ],
-  "implementation": {
-    "execution_recovery": "Unique-ID retry after the temporal source guard was made consistent with the validated fair-alpha-markets-shift2y-v1 protocol scope.",
-    "fair_input_contract": "Only the declared Alpha handler and universe membership; no market-index, concept, industry, or other external model input.",
-    "protocol_document": "docs/FLOW_FDG_V2_PROTOCOL.md",
-    "runner_revision": "flow_fdg_v2_runner_20260720_nonnegative_fast_strength_direction_smooth",
-    "storage_recovery": "Handler cache relocated to /dev/shm after workspace quota exhaustion."
-  },
   "job_id": "alpha360__csi300__flow_fdg_v2__drift_shift2y_longbudget_allckpt_v1__seed11",
   "lock_id": "shift2y-shorttest-v1-20260721",
-  "long_epoch_provenance": {
-    "budget": [
-      {
-        "early_stop_patience": 12,
-        "epochs": 60,
-        "minimum_epochs_before_stop": 15,
-        "name": "local",
-        "selection_variant": "local"
-      },
-      {
-        "early_stop_patience": 0,
-        "epochs": 20,
-        "minimum_epochs_before_stop": 0,
-        "name": "flow_warm",
-        "selection_variant": "full"
-      },
-      {
-        "early_stop_patience": 12,
-        "epochs": 40,
-        "minimum_epochs_before_stop": 15,
-        "name": "joint",
-        "selection_variant": "full"
-      }
-    ],
-    "campaign_id": "drift_long_epoch_allckpt_75cell_20260725",
-    "checkpoint_policy": {
-      "archive_every_executed_epoch": true,
-      "includes_model": true,
-      "includes_optimizer": true,
-      "includes_rng_state": true,
-      "selection_split": "valid",
-      "test_per_epoch": false
-    },
-    "historical_budget_config": "configs/experiments/flow_fdg_v2/compact_gru64_slow_direction_equal_joint_lr_seed5.json",
-    "historical_budget_config_sha256": "71e21972abdf31259306b318ad12d65224bffe30eeb9a14b787a1690b49a114b",
-    "parent_config": "configs/experiments/accelerated_4cell_15seed_20260723/alpha360__csi300/drift/drift_seed0.json",
-    "parent_config_sha256": "07ecdc3b4fe24916f0a8e3151b2d72a35a2356e3ca6cee54f7650e104296ca5b",
-    "runner_sha256_at_generation": "28950c53a47c898c34e69a7f190bd88ade503f4b260eb821681b25ffa07175b4",
-    "schema": "drift_long_epoch_allckpt_v1"
-  },
   "loss": {
     "activity_balance_weight": 0.01,
     "activity_target": 0.5,
