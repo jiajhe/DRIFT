@@ -4,3 +4,4 @@
 *.md text eol=lf
 data/** binary
 checkpoints/*.pt binary
+checkpoints/paper_ensemble/**/*.pt binary
