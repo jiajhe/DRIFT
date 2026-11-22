@@ -1,7 +1,10 @@
-// Market Star Map: interactive single-date S&P 500 cross-sectional DRIFT constellation.
+// Market Star Map: interactive 3D galactic-disk visualization of S&P 500 DRIFT flows.
 const $ = id => document.getElementById(id);
 
 const FEATURED = ["AAPL", "NVDA", "MSFT", "GOOGL", "AMZN", "META", "TSLA", "JPM"];
+const DEFAULT_PITCH = 0.74; // ~42 deg tilted galactic plane (not a hollow sphere)
+const DEFAULT_YAW = -0.35;
+const CAM_DIST = 3.25;
 
 const sm = {
   data: null,
@@ -12,24 +15,33 @@ const sm = {
   hubRank: [],
   selectedIdx: -1,
   hoveredIdx: -1,
-  layout: "constellation", // "constellation" | "role"
+  layout: "constellation", // "constellation" (3D galaxy disk) | "role" (flat 2D quadrant)
   colorBy: "score",        // "score" | "role"
   showWeb: true,
   showDownstream: false,
-  // Camera in world space (world [-1, 1] fits inside min(w, h) * 0.44 * zoom)
-  cam: { x: 0, y: 0, zoom: 1.0 },
+  autoSpin: true,
+  spinResumeAt: 0,
+  // 3D orbital camera around focal target (tx, ty, tz)
+  cam: { tx: 0, ty: 0, tz: 0, yaw: DEFAULT_YAW, pitch: DEFAULT_PITCH, zoom: 1.08 },
   targetCam: null,
-  // Layout interpolation
+  // Angular momentum for silky drag inertia
+  velYaw: 0,
+  velPitch: 0,
+  // 3D layout interpolation: [x, y, z] per stock
   pos: [],
   targetPos: [],
   layoutLerp: 1,
+  // Cached screen projection for crisp hit-testing
+  screenX: new Float32Array(0),
+  screenY: new Float32Array(0),
+  screenZ: new Float32Array(0),
+  screenP: new Float32Array(0),
   // Pointer state
   dragging: false,
+  dragPan: false,
   dragMoved: false,
-  dragStartX: 0,
-  dragStartY: 0,
-  camStartX: 0,
-  camStartY: 0,
+  lastPointerX: 0,
+  lastPointerY: 0,
   // Animation & callbacks
   animFrame: 0,
   lastNow: 0,
@@ -38,7 +50,7 @@ const sm = {
   initialized: false,
 };
 
-const fmt = n => Number(n).toFixed(3);
+const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
 const signed = n => (n > 0 ? "+" : "") + Number(n).toFixed(4);
 const signedShort = n => (n > 0 ? "+" : "") + Number(n).toFixed(2);
 const signedEdgeMilli = w => {
@@ -53,7 +65,6 @@ function fuzzyMatch(query, ticker) {
   if (ticker.startsWith(query)) return { rank: 1, indices: [...Array(query.length).keys()] };
   const sub = ticker.indexOf(query);
   if (sub >= 0) return { rank: 2, indices: Array.from({ length: query.length }, (_, k) => sub + k) };
-  // Subsequence match
   let qi = 0;
   const indices = [];
   for (let ti = 0; ti < ticker.length && qi < query.length; ti++) {
@@ -162,41 +173,48 @@ function getScale(w, h) {
   return Math.min(w, h) * 0.45 * sm.cam.zoom;
 }
 
-function worldToScreen(wx, wy, w, h) {
-  const s = getScale(w, h);
-  return [
-    w * 0.5 + (wx - sm.cam.x) * s,
-    h * 0.5 - (wy - sm.cam.y) * s,
-  ];
-}
+// Project 3D galactic-disk coordinates (wx, wy, wz) into screen space.
+function project3D(wx, wy, wz, w, h) {
+  const dx = wx - sm.cam.tx;
+  const dy = wy - sm.cam.ty;
+  const dz = wz - sm.cam.tz;
+  const cyaw = Math.cos(sm.cam.yaw), syaw = Math.sin(sm.cam.yaw);
+  const cp = Math.cos(sm.cam.pitch), sp = Math.sin(sm.cam.pitch);
 
-function screenToWorld(sx, sy, w, h) {
-  const s = getScale(w, h);
-  return [
-    sm.cam.x + (sx - w * 0.5) / s,
-    sm.cam.y - (sy - h * 0.5) / s,
-  ];
+  // Spin around galactic axis Z
+  const rx = dx * cyaw - dy * syaw;
+  const ry = dx * syaw + dy * cyaw;
+  const rz = dz;
+
+  // Tilt galactic plane by pitch (0 = top-down, ~1.35 = near edge-on)
+  const cy = ry * cp + rz * sp;
+  const cz = -ry * sp + rz * cp;
+
+  const persp = sm.layout === "role" && Math.abs(sm.cam.pitch) < 0.02
+    ? 1.0
+    : CAM_DIST / Math.max(0.55, CAM_DIST - cz);
+  const s = getScale(w, h) * persp;
+  return [w * 0.5 + rx * s, h * 0.5 - cy * s, cz, persp];
 }
 
 function nodeRadius(n) {
-  // Base star radius scales subtly with out-degree (market hubness)
-  return 2.4 + Math.min(4.8, Math.sqrt(n.out) * 0.95);
+  return 2.3 + Math.min(4.6, Math.sqrt(n.out) * 0.92);
 }
 
 function nodeColor(n) {
   if (sm.colorBy === "role") {
     const net = n.gs - n.gr;
-    if (net > 0.04) return "#2dd4bf";  // Net sender (bright teal)
-    if (net < -0.04) return "#f59e0b"; // Net receiver (amber)
-    return "#94a3b8";                  // Balanced (slate)
+    if (net > 0.04) return "#2dd4bf";
+    if (net < -0.04) return "#f59e0b";
+    return "#94a3b8";
   }
-  if (n.s >= 0.35) return "#14b8a6";   // Strong positive DRIFT score
-  if (n.s >= 0.0) return "#5eead4";    // Mild positive
-  if (n.s <= -0.35) return "#f43f5e";  // Strong negative
-  return "#fda4af";                    // Mild negative
+  if (n.s >= 0.35) return "#14b8a6";
+  if (n.s >= 0.0) return "#5eead4";
+  if (n.s <= -0.35) return "#f43f5e";
+  return "#fda4af";
 }
 
-function flyTo(idx, maxZoom = 4.2) {
+function flyTo(idx, maxZoom = 3.2) {
   if (idx < 0 || idx >= sm.nodes.length) return;
   const canvas = $("sm-canvas");
   const w = canvas?.clientWidth || 800, h = canvas?.clientHeight || 590;
@@ -204,48 +222,56 @@ function flyTo(idx, maxZoom = 4.2) {
   for (const [srcIdx] of sm.nodes[idx].in_edges) {
     pts.push(sm.targetPos[srcIdx] || sm.pos[srcIdx]);
   }
-  let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
-  for (const [px, py] of pts) {
+  let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity, sumZ = 0;
+  for (const [px, py, pz] of pts) {
     if (px < minX) minX = px;
     if (px > maxX) maxX = px;
     if (py < minY) minY = py;
     if (py > maxY) maxY = py;
+    sumZ += pz || 0;
   }
   const cx = (minX + maxX) * 0.5;
   const cy = (minY + maxY) * 0.5;
-  const spanX = Math.max(0.18, maxX - minX);
-  const spanY = Math.max(0.18, maxY - minY);
+  const cz = sumZ / pts.length;
+  const span = Math.max(0.24, Math.hypot(maxX - minX, maxY - minY));
   const baseScale = Math.min(w, h) * 0.45;
-  const fitZoom = Math.min((w * 0.72) / (spanX * baseScale), (h * 0.72) / (spanY * baseScale));
-  const zoom = Math.max(1.2, Math.min(maxZoom, fitZoom));
+  const fitZoom = (Math.min(w, h) * 0.68) / (span * baseScale);
+  const zoom = clamp(fitZoom, 1.25, maxZoom);
+  const targetPitch = sm.layout === "role" ? 0 : clamp(sm.cam.pitch, 0.35, 0.85);
+  sm.velYaw = 0;
+  sm.velPitch = 0;
   sm.targetCam = {
-    x: cx,
-    y: cy,
+    tx: cx, ty: cy, tz: cz,
+    yaw: sm.layout === "role" ? 0 : sm.cam.yaw,
+    pitch: targetPitch,
     zoom,
-    startX: sm.cam.x,
-    startY: sm.cam.y,
-    startZoom: sm.cam.zoom,
+    startTx: sm.cam.tx, startTy: sm.cam.ty, startTz: sm.cam.tz,
+    startYaw: sm.cam.yaw, startPitch: sm.cam.pitch, startZoom: sm.cam.zoom,
+    startTime: performance.now(),
+    duration: 440,
+  };
+  sm.spinResumeAt = performance.now() + 900;
+  ensureLoop();
+}
+
+function resetCamera() {
+  sm.velYaw = 0;
+  sm.velPitch = 0;
+  const isRole = sm.layout === "role";
+  sm.targetCam = {
+    tx: 0, ty: 0, tz: 0,
+    yaw: isRole ? 0 : sm.cam.yaw,
+    pitch: isRole ? 0 : DEFAULT_PITCH,
+    zoom: isRole ? 1.0 : 1.08,
+    startTx: sm.cam.tx, startTy: sm.cam.ty, startTz: sm.cam.tz,
+    startYaw: sm.cam.yaw, startPitch: sm.cam.pitch, startZoom: sm.cam.zoom,
     startTime: performance.now(),
     duration: 420,
   };
   ensureLoop();
 }
 
-function resetCamera() {
-  sm.targetCam = {
-    x: 0,
-    y: 0,
-    zoom: 1.0,
-    startX: sm.cam.x,
-    startY: sm.cam.y,
-    startZoom: sm.cam.zoom,
-    startTime: performance.now(),
-    duration: 360,
-  };
-  ensureLoop();
-}
-
-function selectNode(idx, { fly = true, zoom = 4.2 } = {}) {
+function selectNode(idx, { fly = true, zoom = 3.2 } = {}) {
   sm.selectedIdx = idx;
   if (idx >= 0) {
     const n = sm.nodes[idx];
@@ -267,21 +293,26 @@ function setLayout(mode) {
   for (const b of $("sm-layout-switch").querySelectorAll("button")) {
     b.setAttribute("aria-pressed", String(b.dataset.layout === mode));
   }
-  sm.targetPos = sm.nodes.map(n => mode === "role" ? [n.rx, n.ry] : [n.x, n.y]);
+  sm.targetPos = sm.nodes.map(n =>
+    mode === "role" ? [n.rx, n.ry, 0] : [n.x, n.y, n.z || 0]
+  );
   sm.layoutLerp = 0;
-  if (sm.selectedIdx >= 0) {
-    const p = sm.targetPos[sm.selectedIdx];
-    sm.targetCam = {
-      x: p[0],
-      y: p[1],
-      zoom: sm.cam.zoom,
-      startX: sm.cam.x,
-      startY: sm.cam.y,
-      startZoom: sm.cam.zoom,
-      startTime: performance.now(),
-      duration: 420,
-    };
-  }
+  sm.velYaw = 0;
+  sm.velPitch = 0;
+  const focus = sm.selectedIdx >= 0 ? sm.targetPos[sm.selectedIdx] : [0, 0, 0];
+  sm.targetCam = {
+    tx: sm.selectedIdx >= 0 ? focus[0] : 0,
+    ty: sm.selectedIdx >= 0 ? focus[1] : 0,
+    tz: sm.selectedIdx >= 0 ? focus[2] : 0,
+    yaw: mode === "role" ? 0 : DEFAULT_YAW,
+    pitch: mode === "role" ? 0 : DEFAULT_PITCH,
+    zoom: sm.selectedIdx >= 0 ? Math.min(sm.cam.zoom, 2.4) : (mode === "role" ? 1.0 : 1.08),
+    startTx: sm.cam.tx, startTy: sm.cam.ty, startTz: sm.cam.tz,
+    startYaw: sm.cam.yaw, startPitch: sm.cam.pitch, startZoom: sm.cam.zoom,
+    startTime: performance.now(),
+    duration: 460,
+  };
+  updateSpinButton();
   ensureLoop();
 }
 
@@ -292,6 +323,15 @@ function setColorBy(mode) {
   }
   updateLegend();
   ensureLoop();
+}
+
+function updateSpinButton() {
+  const btn = $("sm-spin-toggle");
+  if (!btn) return;
+  const active = sm.autoSpin && sm.layout === "constellation";
+  btn.textContent = active ? "Pause" : "Spin";
+  btn.setAttribute("aria-pressed", String(active));
+  btn.disabled = sm.layout === "role";
 }
 
 function updateLegend() {
@@ -320,7 +360,7 @@ function renderQuickChips() {
     const b = nodeEl("button", sym, "ticker-pill");
     b.type = "button";
     b.setAttribute("aria-pressed", String(sym === current));
-    b.onclick = () => selectNode(sm.byId.get(sym), { fly: true, zoom: 4.2 });
+    b.onclick = () => selectNode(sm.byId.get(sym), { fly: true, zoom: 3.0 });
     return b;
   }));
 }
@@ -331,7 +371,6 @@ function renderInspector() {
   if (sm.selectedIdx < 0) {
     empty.hidden = false;
     body.hidden = true;
-    // Populate top hubs list in empty state
     const hubs = $("sm-top-hubs");
     hubs.replaceChildren(...sm.hubRank.slice(0, 8).map(idx => {
       const n = sm.nodes[idx];
@@ -342,7 +381,7 @@ function renderInspector() {
         nodeEl("span", `${n.out} downstream`, "sm-hub-meta"),
         nodeEl("span", signedShort(n.s), n.s >= 0 ? "pos" : "neg"),
       );
-      b.onclick = () => selectNode(idx, { fly: true, zoom: 4.2 });
+      b.onclick = () => selectNode(idx, { fly: true, zoom: 3.0 });
       return b;
     }));
     return;
@@ -365,7 +404,6 @@ function renderInspector() {
   $("sm-sel-flow").textContent = signedShort(n.flw);
   $("sm-sel-role-nums").innerHTML = `<span class="math"><var>g</var><sub><var>s</var></sub></span> = ${n.gs.toFixed(2)}, <span class="math"><var>g</var><sub><var>r</var></sub></span> = ${n.gr.toFixed(2)}, ${n.out} downstream`;
 
-  // Upstream top-5 list
   const maxW = Math.max(...n.in_edges.map(e => Math.abs(e[1]))) || 1;
   $("sm-up-list").replaceChildren(...n.in_edges.map(([srcIdx, w]) => {
     const src = sm.nodes[srcIdx];
@@ -379,11 +417,10 @@ function renderInspector() {
       nodeEl("span", signedEdgeMilli(w), w >= 0 ? "pos" : "neg"),
     );
     b.title = `K[${n.id}, ${src.id}] = ${signedEdgeMilli(w)} × 10⁻³ (click to focus ${src.id})`;
-    b.onclick = () => selectNode(srcIdx, { fly: true, zoom: Math.max(sm.cam.zoom, 4.2) });
+    b.onclick = () => selectNode(srcIdx, { fly: true, zoom: Math.max(sm.cam.zoom, 3.0) });
     return b;
   }));
 
-  // Downstream list
   const down = sm.downstream[sm.selectedIdx] || [];
   $("sm-down-count").textContent = `${down.length} stocks`;
   const downList = $("sm-down-list");
@@ -396,12 +433,11 @@ function renderInspector() {
       b.type = "button";
       b.append(nodeEl("span", dst.id), nodeEl("small", signedEdgeMilli(w), w >= 0 ? "pos" : "neg"));
       b.title = `K[${dst.id}, ${n.id}] = ${signedEdgeMilli(w)} × 10⁻³ (click to focus ${dst.id})`;
-      b.onclick = () => selectNode(dstIdx, { fly: true, zoom: Math.max(sm.cam.zoom, 4.2) });
+      b.onclick = () => selectNode(dstIdx, { fly: true, zoom: Math.max(sm.cam.zoom, 3.0) });
       return b;
     }));
   }
 
-  // Deep link to Flow Explorer
   const openBtn = $("sm-open-explorer");
   const canOpen = sm.archivedTargets.has(n.id);
   openBtn.textContent = canOpen
@@ -413,36 +449,111 @@ function renderInspector() {
   };
 }
 
+function drawGalacticPlaneGuides(ctx, w, h) {
+  const [ox, oy, , opersp] = project3D(0, 0, 0, w, h);
+  const scale = getScale(w, h) * opersp;
+
+  // Soft tilted galactic core nebula glow (flat disk ellipse, not a ball)
+  ctx.save();
+  const flatY = Math.max(0.20, Math.cos(sm.cam.pitch));
+  ctx.translate(ox, oy);
+  ctx.scale(1, flatY);
+  const coreR = scale * 1.02;
+  const nebula = ctx.createRadialGradient(0, 0, 2, 0, 0, coreR);
+  nebula.addColorStop(0, "rgba(45, 212, 191, 0.15)");
+  nebula.addColorStop(0.42, "rgba(56, 189, 248, 0.065)");
+  nebula.addColorStop(0.75, "rgba(99, 102, 241, 0.03)");
+  nebula.addColorStop(1, "rgba(8, 12, 20, 0)");
+  ctx.fillStyle = nebula;
+  ctx.beginPath();
+  ctx.arc(0, 0, coreR, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
+
+  // Concentric 3D orbital rings lying flat in the galactic plane z = 0
+  ctx.save();
+  ctx.lineWidth = 1;
+  const segs = 96;
+  for (const r of [0.34, 0.68, 1.0]) {
+    ctx.strokeStyle = r === 1.0 ? "rgba(148, 163, 184, 0.19)" : "rgba(148, 163, 184, 0.11)";
+    ctx.beginPath();
+    for (let k = 0; k <= segs; k++) {
+      const a = (k / segs) * Math.PI * 2;
+      const [px, py] = project3D(Math.cos(a) * r, Math.sin(a) * r, 0, w, h);
+      if (k === 0) ctx.moveTo(px, py);
+      else ctx.lineTo(px, py);
+    }
+    ctx.stroke();
+  }
+
+  // Faint radial spokes on the galactic plane so rotation is immediately legible
+  ctx.strokeStyle = "rgba(148, 163, 184, 0.075)";
+  for (let k = 0; k < 6; k++) {
+    const a = (k / 6) * Math.PI;
+    const [x1, y1] = project3D(Math.cos(a) * 1.0, Math.sin(a) * 1.0, 0, w, h);
+    const [x2, y2] = project3D(-Math.cos(a) * 1.0, -Math.sin(a) * 1.0, 0, w, h);
+    ctx.beginPath();
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x2, y2);
+    ctx.stroke();
+  }
+  ctx.restore();
+}
+
 function drawFrame(now) {
   const canvas = $("sm-canvas");
   if (!canvas || $("starmap").hidden) { sm.animFrame = 0; return; }
   const w = canvas.clientWidth, h = canvas.clientHeight;
   if (!w || !h) return;
 
-  // Step camera animation
+  const dt = sm.lastNow ? Math.min(48, now - sm.lastNow) : 16;
+  sm.lastNow = now;
+  const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   let animating = false;
+
+  // Step camera fly animation
   if (sm.targetCam) {
     const t = Math.min(1, (now - sm.targetCam.startTime) / sm.targetCam.duration);
     const ease = 1 - Math.pow(1 - t, 3);
-    sm.cam.x = sm.targetCam.startX + (sm.targetCam.x - sm.targetCam.startX) * ease;
-    sm.cam.y = sm.targetCam.startY + (sm.targetCam.y - sm.targetCam.startY) * ease;
+    sm.cam.tx = sm.targetCam.startTx + (sm.targetCam.tx - sm.targetCam.startTx) * ease;
+    sm.cam.ty = sm.targetCam.startTy + (sm.targetCam.ty - sm.targetCam.startTy) * ease;
+    sm.cam.tz = sm.targetCam.startTz + (sm.targetCam.tz - sm.targetCam.startTz) * ease;
+    sm.cam.yaw = sm.targetCam.startYaw + (sm.targetCam.yaw - sm.targetCam.startYaw) * ease;
+    sm.cam.pitch = sm.targetCam.startPitch + (sm.targetCam.pitch - sm.targetCam.startPitch) * ease;
     sm.cam.zoom = sm.targetCam.startZoom + (sm.targetCam.zoom - sm.targetCam.startZoom) * ease;
     if (t >= 1) sm.targetCam = null;
     else animating = true;
+  } else if (!sm.dragging && sm.layout === "constellation") {
+    // Apply smooth drag inertia
+    if (Math.abs(sm.velYaw) > 1e-5 || Math.abs(sm.velPitch) > 1e-5) {
+      sm.cam.yaw += sm.velYaw;
+      sm.cam.pitch = clamp(sm.cam.pitch + sm.velPitch, 0.06, 1.38);
+      sm.velYaw *= 0.92;
+      sm.velPitch *= 0.90;
+      animating = true;
+    }
+    // Gentle continuous galactic disk auto-rotation
+    if (sm.autoSpin && !reducedMotion && now >= sm.spinResumeAt) {
+      const spinRate = sm.selectedIdx >= 0 && sm.cam.zoom > 1.8 ? 0.000085 : 0.00017;
+      sm.cam.yaw += dt * spinRate;
+      animating = true;
+    }
   }
 
-  // Step layout interpolation
+  // Step 3D layout interpolation
   if (sm.layoutLerp < 1) {
     sm.layoutLerp = Math.min(1, sm.layoutLerp + 0.08);
     const e = 1 - Math.pow(1 - sm.layoutLerp, 3);
     for (let i = 0; i < sm.pos.length; i++) {
       sm.pos[i][0] += (sm.targetPos[i][0] - sm.pos[i][0]) * Math.max(0.18, e);
       sm.pos[i][1] += (sm.targetPos[i][1] - sm.pos[i][1]) * Math.max(0.18, e);
+      sm.pos[i][2] += (sm.targetPos[i][2] - sm.pos[i][2]) * Math.max(0.18, e);
     }
     if (sm.layoutLerp >= 1) {
       for (let i = 0; i < sm.pos.length; i++) {
         sm.pos[i][0] = sm.targetPos[i][0];
         sm.pos[i][1] = sm.targetPos[i][1];
+        sm.pos[i][2] = sm.targetPos[i][2];
       }
     } else {
       animating = true;
@@ -455,36 +566,26 @@ function drawFrame(now) {
   const ctx = canvas.getContext("2d");
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-  // Deep observatory dark background with subtle radial vignette
-  const bg = ctx.createRadialGradient(w * 0.5, h * 0.5, 20, w * 0.5, h * 0.5, Math.max(w, h) * 0.72);
-  bg.addColorStop(0, "#111827");
-  bg.addColorStop(1, "#080c14");
+  // Deep observatory dark backdrop
+  const bg = ctx.createRadialGradient(w * 0.5, h * 0.5, 20, w * 0.5, h * 0.5, Math.max(w, h) * 0.74);
+  bg.addColorStop(0, "#101726");
+  bg.addColorStop(1, "#070b13");
   ctx.fillStyle = bg;
   ctx.fillRect(0, 0, w, h);
 
-  // Subtle celestial coordinate rings / axes
-  const [ox, oy] = worldToScreen(0, 0, w, h);
-  const scale = getScale(w, h);
-  ctx.save();
-  ctx.strokeStyle = "rgba(148, 163, 184, 0.08)";
-  ctx.lineWidth = 1;
+  // Plane guides
   if (sm.layout === "constellation") {
-    for (const r of [0.33, 0.66, 0.98]) {
-      ctx.beginPath();
-      ctx.arc(ox, oy, r * scale, 0, Math.PI * 2);
-      ctx.stroke();
-    }
-    ctx.beginPath();
-    ctx.moveTo(ox - scale, oy); ctx.lineTo(ox + scale, oy);
-    ctx.moveTo(ox, oy - scale); ctx.lineTo(ox, oy + scale);
-    ctx.stroke();
+    drawGalacticPlaneGuides(ctx, w, h);
   } else {
-    // Role x Score quadrant axes
+    const [ox, oy] = project3D(0, 0, 0, w, h);
+    ctx.save();
+    ctx.strokeStyle = "rgba(148, 163, 184, 0.14)";
+    ctx.lineWidth = 1;
     ctx.beginPath();
     ctx.moveTo(0, oy); ctx.lineTo(w, oy);
     ctx.moveTo(ox, 0); ctx.lineTo(ox, h);
     ctx.stroke();
-    ctx.fillStyle = "rgba(148, 163, 184, 0.42)";
+    ctx.fillStyle = "rgba(148, 163, 184, 0.45)";
     ctx.font = '500 10px "IBM Plex Mono", monospace';
     ctx.textAlign = "right";
     ctx.fillText("NET SENDER →", w - 14, oy - 6);
@@ -492,16 +593,21 @@ function drawFrame(now) {
     ctx.fillText("← NET RECEIVER", 14, oy - 6);
     ctx.fillText("↑ POSITIVE DRIFT", ox + 8, 18);
     ctx.fillText("↓ NEGATIVE DRIFT", ox + 8, h - 12);
+    ctx.restore();
   }
-  ctx.restore();
 
-  // Compute screen positions once per frame
-  const sx = new Float32Array(sm.nodes.length);
-  const sy = new Float32Array(sm.nodes.length);
-  for (let i = 0; i < sm.nodes.length; i++) {
-    const [px, py] = worldToScreen(sm.pos[i][0], sm.pos[i][1], w, h);
-    sx[i] = px;
-    sy[i] = py;
+  // Project all 489 stars once per frame
+  const count = sm.nodes.length;
+  if (sm.screenX.length !== count) {
+    sm.screenX = new Float32Array(count);
+    sm.screenY = new Float32Array(count);
+    sm.screenZ = new Float32Array(count);
+    sm.screenP = new Float32Array(count);
+  }
+  const sx = sm.screenX, sy = sm.screenY, sz = sm.screenZ, sp = sm.screenP;
+  for (let i = 0; i < count; i++) {
+    const [px, py, pz, persp] = project3D(sm.pos[i][0], sm.pos[i][1], sm.pos[i][2], w, h);
+    sx[i] = px; sy[i] = py; sz[i] = pz; sp[i] = persp;
   }
 
   const focusIdx = sm.selectedIdx >= 0 ? sm.selectedIdx : sm.hoveredIdx;
@@ -520,9 +626,12 @@ function drawFrame(now) {
     ctx.save();
     ctx.lineWidth = 0.8;
     for (const [u, v, wt] of sm.data.skeleton) {
+      const depthAlpha = clamp(0.55 + 0.45 * ((sp[u] + sp[v]) * 0.5 - 0.7), 0.35, 1.0);
       ctx.strokeStyle = hasFocus
-        ? "rgba(148, 163, 184, 0.045)"
-        : (wt >= 0 ? "rgba(45, 212, 191, 0.13)" : "rgba(244, 63, 94, 0.12)");
+        ? `rgba(148, 163, 184, ${(0.045 * depthAlpha).toFixed(3)})`
+        : (wt >= 0
+          ? `rgba(45, 212, 191, ${(0.14 * depthAlpha).toFixed(3)})`
+          : `rgba(244, 63, 94, ${(0.13 * depthAlpha).toFixed(3)})`);
       ctx.beginPath();
       ctx.moveTo(sx[u], sy[u]);
       ctx.lineTo(sx[v], sy[v]);
@@ -531,7 +640,7 @@ function drawFrame(now) {
     ctx.restore();
   }
 
-  // Layer 2: Focused stock's downstream edges (optional)
+  // Layer 2: Optional downstream edges
   if (hasFocus && sm.showDownstream) {
     const down = sm.downstream[focusIdx] || [];
     ctx.save();
@@ -547,33 +656,43 @@ function drawFrame(now) {
     ctx.restore();
   }
 
-  // Layer 3: Focused stock's Top-5 upstream edges (with directional glow & traveling pulses)
-  const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  // Layer 3: Focused stock's Top-5 upstream 3D arcs with traveling light pulses
+  const badgeBoxes = [];
   if (hasFocus) {
     const fNode = sm.nodes[focusIdx];
     const maxW = Math.max(...fNode.in_edges.map(e => Math.abs(e[1]))) || 1;
     const tx = sx[focusIdx], ty = sy[focusIdx];
+    const tPos = sm.pos[focusIdx];
+    const badgeTs = [0.36, 0.54, 0.44, 0.64, 0.30];
     fNode.in_edges.forEach(([srcIdx, wt], rank) => {
       const fx = sx[srcIdx], fy = sy[srcIdx];
+      const fPos = sm.pos[srcIdx];
+      // Midpoint arches gently above the galactic plane in 3D space
+      const midW = [
+        (fPos[0] + tPos[0]) * 0.5,
+        (fPos[1] + tPos[1]) * 0.5,
+        (fPos[2] + tPos[2]) * 0.5 + (sm.layout === "constellation" ? 0.06 + (rank % 2) * 0.025 : 0),
+      ];
+      let [mx, my] = project3D(midW[0], midW[1], midW[2], w, h);
+      // Small lateral curve offset in screen space so co-linear arcs separate cleanly
       const dx = tx - fx, dy = ty - fy;
       const dist = Math.hypot(dx, dy) || 1;
-      // Subtle quadratic curve offset so overlapping edges separate cleanly
-      const curve = (rank % 2 === 0 ? 1 : -1) * Math.min(34, dist * 0.14);
-      const mx = (fx + tx) * 0.5 - (dy / dist) * curve;
-      const my = (fy + ty) * 0.5 + (dx / dist) * curve;
+      const curve = (rank % 2 === 0 ? 1 : -1) * Math.min(28, dist * 0.13);
+      mx -= (dy / dist) * curve;
+      my += (dx / dist) * curve;
+
       const col = wt >= 0 ? "#2dd4bf" : "#fb7185";
       const strength = Math.abs(wt) / maxW;
 
       ctx.save();
       ctx.strokeStyle = col;
-      ctx.globalAlpha = 0.45 + 0.5 * strength;
+      ctx.globalAlpha = 0.5 + 0.48 * strength;
       ctx.lineWidth = 1.2 + 1.8 * strength;
       ctx.beginPath();
       ctx.moveTo(fx, fy);
       ctx.quadraticCurveTo(mx, my, tx, ty);
       ctx.stroke();
 
-      // Traveling light pulse along the quadratic curve (sender -> target)
       if (!reducedMotion) {
         const phase = ((now * 0.00048) + rank * 0.19) % 1;
         const u = 1 - phase;
@@ -586,19 +705,30 @@ function drawFrame(now) {
         ctx.fill();
       }
 
-      // Edge weight badge near curve midpoint when zoomed in or selected (scaled ×10⁻³)
       if (sm.selectedIdx === focusIdx) {
-        ctx.globalAlpha = 0.92;
+        ctx.globalAlpha = 0.94;
         ctx.font = '600 9.5px "IBM Plex Mono", monospace';
         const lbl = signedEdgeMilli(wt);
         const lw = ctx.measureText(lbl).width + 8;
-        const bx = 0.25 * fx + 0.5 * mx + 0.25 * tx;
-        const by = 0.25 * fy + 0.5 * my + 0.25 * ty;
-        ctx.fillStyle = "rgba(8, 12, 20, 0.86)";
-        ctx.fillRect(bx - lw * 0.5, by - 7.5, lw, 15);
+        const lh = 15;
+        const bt = badgeTs[rank % badgeTs.length];
+        const bu = 1 - bt;
+        let bx = bu * bu * fx + 2 * bu * bt * mx + bt * bt * tx;
+        let by = bu * bu * fy + 2 * bu * bt * my + bt * bt * ty;
+        // Nudge badge vertically if it overlaps a previously placed edge badge
+        for (let tries = 0; tries < 6; tries++) {
+          const hit = badgeBoxes.some(([ox, oy, ow, oh]) =>
+            Math.abs(bx - ox) < (lw + ow) * 0.54 && Math.abs(by - oy) < (lh + oh) * 0.56
+          );
+          if (!hit) break;
+          by += (rank % 2 === 0 ? -1 : 1) * 16;
+        }
+        badgeBoxes.push([bx, by, lw, lh]);
+        ctx.fillStyle = "rgba(8, 12, 20, 0.90)";
+        ctx.fillRect(bx - lw * 0.5, by - lh * 0.5, lw, lh);
         ctx.strokeStyle = col;
         ctx.lineWidth = 0.8;
-        ctx.strokeRect(bx - lw * 0.5, by - 7.5, lw, 15);
+        ctx.strokeRect(bx - lw * 0.5, by - lh * 0.5, lw, lh);
         ctx.fillStyle = col;
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
@@ -609,26 +739,28 @@ function drawFrame(now) {
     if (!reducedMotion) animating = true;
   }
 
-  // Layer 4: All ~489 Star Nodes
-  for (let i = 0; i < sm.nodes.length; i++) {
-    const px = sx[i], py = sy[i];
-    if (px < -20 || px > w + 20 || py < -20 || py > h + 20) continue;
+  // Layer 4: Depth-sorted 3D Star Nodes (back-to-front painter's order)
+  const order = Array.from({ length: count }, (_, i) => i).sort((a, b) => sz[a] - sz[b]);
+  for (let k = 0; k < count; k++) {
+    const i = order[k];
+    const px = sx[i], py = sy[i], persp = sp[i];
+    if (px < -24 || px > w + 24 || py < -24 || py > h + 24) continue;
     const n = sm.nodes[i];
     const isFocus = i === focusIdx;
     const isUp = upstreamSet.has(i);
     const isDown = downstreamSet.has(i);
-    const baseR = nodeRadius(n) * Math.min(1.6, 0.85 + sm.cam.zoom * 0.14);
+    const baseR = nodeRadius(n) * Math.min(1.65, 0.82 + sm.cam.zoom * 0.14) * clamp(persp, 0.62, 1.55);
 
     ctx.save();
+    const depthFade = clamp(0.45 + 0.55 * ((persp - 0.68) / 0.55), 0.38, 1.0);
     if (hasFocus && !isFocus && !isUp && !isDown) {
-      ctx.globalAlpha = 0.22;
+      ctx.globalAlpha = 0.22 * depthFade;
     } else {
-      ctx.globalAlpha = 0.95;
+      ctx.globalAlpha = isFocus || isUp ? 0.98 : 0.94 * depthFade;
     }
 
-    // Soft starlight halo for hubs, focus, and connected neighbors
     if (isFocus || isUp || isDown || n.out >= 10) {
-      const haloR = isFocus ? baseR * 3.4 : baseR * 2.2;
+      const haloR = isFocus ? baseR * 3.3 : baseR * 2.2;
       const g = ctx.createRadialGradient(px, py, 0.5, px, py, haloR);
       const hc = isFocus ? "rgba(250, 204, 21, 0.45)" : isUp ? "rgba(45, 212, 191, 0.35)" : isDown ? "rgba(251, 191, 36, 0.28)" : "rgba(148, 163, 184, 0.18)";
       g.addColorStop(0, hc);
@@ -639,10 +771,9 @@ function drawFrame(now) {
       ctx.fill();
     }
 
-    // Star core
     ctx.fillStyle = isFocus ? "#facc15" : nodeColor(n);
     ctx.beginPath();
-    ctx.arc(px, py, isFocus ? baseR * 1.45 : isUp ? baseR * 1.2 : baseR, 0, Math.PI * 2);
+    ctx.arc(px, py, isFocus ? baseR * 1.42 : isUp ? baseR * 1.18 : baseR, 0, Math.PI * 2);
     ctx.fill();
 
     if (isFocus || isUp) {
@@ -653,13 +784,13 @@ function drawFrame(now) {
     ctx.restore();
   }
 
-  // Layer 5: LOD Star Labels with simple screen-space collision avoidance
+  // Layer 5: LOD Star Labels with screen-space collision avoidance
   const placed = [];
   const tryLabel = (idx, priority = false) => {
-    const px = sx[idx], py = sy[idx];
+    const px = sx[idx], py = sy[idx], persp = sp[idx];
     if (px < 18 || px > w - 18 || py < 14 || py > h - 14) return;
     const text = sm.nodes[idx].id;
-    const r = nodeRadius(sm.nodes[idx]) * Math.min(1.6, 0.85 + sm.cam.zoom * 0.14);
+    const r = nodeRadius(sm.nodes[idx]) * Math.min(1.65, 0.82 + sm.cam.zoom * 0.14) * clamp(persp, 0.65, 1.5);
     const lx = px, ly = py - r - 8;
     const boxW = text.length * 6.8 + 8, boxH = 14;
     if (!priority) {
@@ -677,7 +808,7 @@ function drawFrame(now) {
       ctx.fillRect(lx - boxW * 0.5, ly - 7.5, boxW, 15);
       ctx.fillStyle = idx === focusIdx ? "#fde047" : "#f8fafc";
     } else {
-      ctx.fillStyle = hasFocus ? "rgba(226, 232, 240, 0.45)" : "rgba(226, 232, 240, 0.82)";
+      ctx.fillStyle = hasFocus ? "rgba(226, 232, 240, 0.42)" : "rgba(226, 232, 240, 0.80)";
     }
     ctx.fillText(text, lx, ly + 0.5);
     ctx.restore();
@@ -690,9 +821,11 @@ function drawFrame(now) {
       for (const [dstIdx] of (sm.downstream[focusIdx] || []).slice(0, 10)) tryLabel(dstIdx, false);
     }
   }
-  // Ambient labels scale with zoom level
   if (sm.cam.zoom >= 2.2) {
-    for (const idx of sm.hubRank) tryLabel(idx, false);
+    for (const sym of FEATURED) {
+      if (sm.byId.has(sym)) tryLabel(sm.byId.get(sym), false);
+    }
+    for (const idx of sm.hubRank.slice(0, hasFocus ? 22 : 36)) tryLabel(idx, false);
   } else {
     for (const sym of FEATURED) {
       if (sm.byId.has(sym)) tryLabel(sm.byId.get(sym), false);
@@ -700,7 +833,6 @@ function drawFrame(now) {
     for (const idx of sm.hubRank.slice(0, 14)) tryLabel(idx, false);
   }
 
-  // Update zoom HUD readout
   const hud = $("sm-zoom-readout");
   if (hud) hud.textContent = `${sm.cam.zoom.toFixed(1)}×`;
 
@@ -713,6 +845,7 @@ function drawFrame(now) {
 
 function ensureLoop() {
   if (!sm.animFrame && sm.data && !$("starmap").hidden) {
+    sm.lastNow = 0;
     sm.animFrame = requestAnimationFrame(drawFrame);
   }
 }
@@ -721,12 +854,14 @@ function hitTest(clientX, clientY) {
   const canvas = $("sm-canvas");
   const rect = canvas.getBoundingClientRect();
   const mx = clientX - rect.left, my = clientY - rect.top;
-  const w = rect.width, h = rect.height;
-  let best = -1, bestDist = 14;
+  let best = -1, bestDist = 15, bestZ = -Infinity;
   for (let i = 0; i < sm.nodes.length; i++) {
-    const [px, py] = worldToScreen(sm.pos[i][0], sm.pos[i][1], w, h);
-    const d = Math.hypot(mx - px, my - py);
-    if (d < bestDist) { bestDist = d; best = i; }
+    const d = Math.hypot(mx - sm.screenX[i], my - sm.screenY[i]);
+    if (d < bestDist || (d < 15 && sm.screenZ[i] > bestZ && d < bestDist + 3)) {
+      bestDist = d;
+      bestZ = sm.screenZ[i];
+      best = i;
+    }
   }
   return best;
 }
@@ -739,26 +874,23 @@ function bindEvents() {
   canvas.addEventListener("wheel", e => {
     e.preventDefault();
     sm.targetCam = null;
-    const rect = canvas.getBoundingClientRect();
-    const mx = e.clientX - rect.left, my = e.clientY - rect.top;
-    const [wxBefore, wyBefore] = screenToWorld(mx, my, rect.width, rect.height);
-    const factor = e.deltaY < 0 ? 1.18 : 1 / 1.18;
-    sm.cam.zoom = Math.max(0.75, Math.min(16, sm.cam.zoom * factor));
-    const [wxAfter, wyAfter] = screenToWorld(mx, my, rect.width, rect.height);
-    sm.cam.x += wxBefore - wxAfter;
-    sm.cam.y += wyBefore - wyAfter;
+    const factor = e.deltaY < 0 ? 1.15 : 1 / 1.15;
+    sm.cam.zoom = clamp(sm.cam.zoom * factor, 0.65, 10);
     ensureLoop();
   }, { passive: false });
 
+  canvas.addEventListener("contextmenu", e => e.preventDefault());
+
   canvas.addEventListener("pointerdown", e => {
-    if (e.button !== 0) return;
+    if (e.button !== 0 && e.button !== 2) return;
     sm.dragging = true;
+    sm.dragPan = sm.layout === "role" || e.shiftKey || e.button === 2;
     sm.dragMoved = false;
     sm.targetCam = null;
-    sm.dragStartX = e.clientX;
-    sm.dragStartY = e.clientY;
-    sm.camStartX = sm.cam.x;
-    sm.camStartY = sm.cam.y;
+    sm.velYaw = 0;
+    sm.velPitch = 0;
+    sm.lastPointerX = e.clientX;
+    sm.lastPointerY = e.clientY;
     canvas.setPointerCapture(e.pointerId);
     canvas.style.cursor = "grabbing";
   });
@@ -766,14 +898,33 @@ function bindEvents() {
   canvas.addEventListener("pointermove", e => {
     const rect = canvas.getBoundingClientRect();
     if (sm.dragging) {
-      const dx = e.clientX - sm.dragStartX, dy = e.clientY - sm.dragStartY;
-      if (Math.hypot(dx, dy) > 4) sm.dragMoved = true;
-      const s = getScale(rect.width, rect.height);
-      sm.cam.x = sm.camStartX - dx / s;
-      sm.cam.y = sm.camStartY + dy / s;
+      const dx = e.clientX - sm.lastPointerX;
+      const dy = e.clientY - sm.lastPointerY;
+      if (Math.hypot(dx, dy) > 2) sm.dragMoved = true;
+      sm.lastPointerX = e.clientX;
+      sm.lastPointerY = e.clientY;
+
+      if (sm.dragPan) {
+        const s = getScale(rect.width, rect.height);
+        const cyaw = Math.cos(sm.cam.yaw), syaw = Math.sin(sm.cam.yaw);
+        const cp = Math.max(0.28, Math.cos(sm.cam.pitch));
+        const wx = -dx / s;
+        const wy = dy / (s * cp);
+        sm.cam.tx += wx * cyaw + wy * syaw;
+        sm.cam.ty += -wx * syaw + wy * cyaw;
+      } else {
+        // Drag to orbit & tilt the 3D galactic disk
+        const dYaw = dx * 0.0062;
+        const dPitch = -dy * 0.0052;
+        sm.cam.yaw += dYaw;
+        sm.cam.pitch = clamp(sm.cam.pitch + dPitch, 0.06, 1.38);
+        sm.velYaw = sm.velYaw * 0.4 + dYaw * 0.6;
+        sm.velPitch = sm.velPitch * 0.4 + dPitch * 0.6;
+      }
       ensureLoop();
       return;
     }
+
     const hit = hitTest(e.clientX, e.clientY);
     if (hit !== sm.hoveredIdx) {
       sm.hoveredIdx = hit;
@@ -802,8 +953,11 @@ function bindEvents() {
     canvas.style.cursor = sm.hoveredIdx >= 0 ? "pointer" : "grab";
     if (!sm.dragMoved) {
       const hit = hitTest(e.clientX, e.clientY);
-      if (hit >= 0) selectNode(hit, { fly: true, zoom: Math.max(sm.cam.zoom, 3.8) });
+      if (hit >= 0) selectNode(hit, { fly: true, zoom: Math.max(sm.cam.zoom, 2.8) });
       else selectNode(-1, { fly: false });
+    } else {
+      sm.spinResumeAt = performance.now() + 1600;
+      ensureLoop();
     }
   });
 
@@ -873,15 +1027,25 @@ function bindEvents() {
 
   $("sm-zoom-in").addEventListener("click", () => {
     sm.targetCam = null;
-    sm.cam.zoom = Math.min(16, sm.cam.zoom * 1.45);
+    sm.cam.zoom = clamp(sm.cam.zoom * 1.4, 0.65, 10);
     ensureLoop();
   });
   $("sm-zoom-out").addEventListener("click", () => {
     sm.targetCam = null;
-    sm.cam.zoom = Math.max(0.75, sm.cam.zoom / 1.45);
+    sm.cam.zoom = clamp(sm.cam.zoom / 1.4, 0.65, 10);
     ensureLoop();
   });
   $("sm-zoom-reset").addEventListener("click", resetCamera);
+
+  const spinBtn = $("sm-spin-toggle");
+  if (spinBtn) {
+    spinBtn.addEventListener("click", () => {
+      sm.autoSpin = !sm.autoSpin;
+      sm.spinResumeAt = 0;
+      updateSpinButton();
+      ensureLoop();
+    });
+  }
 
   $("sm-layout-switch").addEventListener("click", e => {
     const b = e.target.closest("button[data-layout]");
@@ -925,13 +1089,13 @@ export async function showStarmap({ onOpenExplorer } = {}) {
       });
       for (const list of sm.downstream) list.sort((a, b) => Math.abs(b[1]) - Math.abs(a[1]));
       sm.hubRank = sm.nodes.map((_, i) => i).sort((a, b) => sm.nodes[b].out - sm.nodes[a].out);
-      sm.pos = sm.nodes.map(n => [n.x, n.y]);
-      sm.targetPos = sm.nodes.map(n => [n.x, n.y]);
+      sm.pos = sm.nodes.map(n => [n.x, n.y, n.z || 0]);
+      sm.targetPos = sm.nodes.map(n => [n.x, n.y, n.z || 0]);
 
       $("sm-date-badge").textContent = `Jan 2, 2024 — ${sm.data.universe_size} stocks, ${sm.data.edge_count.toLocaleString("en-US")} directed links`;
       updateLegend();
+      updateSpinButton();
       renderQuickChips();
-      // Start in full-market overview with AAPL gently highlighted (no zoom yet so user sees the whole galaxy)
       const aapl = sm.byId.get("AAPL");
       if (aapl !== undefined) {
         sm.selectedIdx = aapl;
