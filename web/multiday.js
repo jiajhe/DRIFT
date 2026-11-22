@@ -20,6 +20,10 @@ const signed = (value, full = false) => {
   if (value === 0) return "0";
   return (value > 0 ? "+" : "") + (full ? String(value) : value.toPrecision(8));
 };
+const signedEdgeMilli = w => {
+  const v = Number(w) * 1000;
+  return (v > 0 ? "+" : "") + v.toFixed(2);
+};
 
 function mark(parent, tag, attrs, text) {
   const n = document.createElementNS(svgNS, tag);
@@ -111,15 +115,17 @@ function render() {
     const key = i ? "b" : "a", node = el("md-delta-" + key), edge = c.edges_on_final_day[s];
     node.textContent = signed(delta[i]); node.title = signed(delta[i], true);
     el("md-key-" + key).textContent = s;
-    el("md-name-" + key).textContent = "Sender " + key.toUpperCase() + " · " + s;
-    el("md-edge-" + key).textContent = s + " → " + c.target + " · edge " + signed(edge);
+    el("md-name-" + key).textContent = "Sender " + key.toUpperCase() + ": " + s;
+    const edgeEl = el("md-edge-" + key);
+    edgeEl.innerHTML = `${s} → ${c.target}, <span class="math"><var>K</var><sub><var>i</var>,<var>j</var></sub></span> = ${signedEdgeMilli(edge)} <span class="math">×10<sup>−3</sup></span>`;
+    edgeEl.title = `${s} → ${c.target}, exact K = ${signed(edge, true)}`;
   });
   const magnitudes = delta.map(Math.abs), largest = Math.max(...magnitudes);
   const gap = largest ? Math.abs(magnitudes[0] - magnitudes[1]) / largest : 0;
   const tie = gap < 0.05;
   el("md-winner").textContent = tie ? "Near Tie" : stocks[magnitudes[0] > magnitudes[1] ? 0 : 1];
-  el("md-comparison").textContent = (100 * gap).toFixed(1) + "% gap vs. larger |Δscore|" + (tie ? " · within 5%" : "");
-  el("md-target").textContent = c.target + " · " + c.window_dates[0] + " — " + c.date;
+  el("md-comparison").textContent = (100 * gap).toFixed(1) + "% gap relative to larger |Δscore|" + (tie ? " (within 5%)" : "");
+  el("md-target").textContent = c.target + " from " + c.window_dates[0] + " to " + c.date;
   el("md-mechanism").textContent = explanation[mode];
   el("md-mechanism").classList.toggle("is-restored", mode === "restored");
   el("md-results").hidden = false;
@@ -129,7 +135,7 @@ function render() {
 function setMarket(value) {
   market = value;
   const list = el("md-case");
-  list.replaceChildren(...archive.markets[market].cases.map((c, index) => new Option(c.date + " · " + c.target, String(index))));
+  list.replaceChildren(...archive.markets[market].cases.map((c, index) => new Option(c.date + " — " + c.target, String(index))));
   list.value = String(selections[market]); list.disabled = false;
   render();
 }

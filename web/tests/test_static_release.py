@@ -35,7 +35,7 @@ def test_judge_zip_and_screenshots():
     with tempfile.TemporaryDirectory() as folder, zipfile.ZipFile(REPORTS / "marketflow-static.zip") as package:
         assert set(package.namelist()) == {
             "index.html", "app.js", "style.css", "config.js", "archive.js", "model-card.json", "historical-demo.json",
-            "multiday.js", "multiday-replay.json"
+            "multiday.js", "multiday-replay.json", "starmap.js", "starmap-demo.json"
         }
         package.extractall(folder)
         archive = json.loads(package.read("historical-demo.json"))
@@ -48,10 +48,26 @@ def test_judge_zip_and_screenshots():
             page.on("pageerror", lambda error: failures.append(str(error)))
             page.route("**/api/**", lambda route: route.abort("connectionrefused"))
             page.goto(url)
-            page.locator("#content").wait_for()
             check = pw.expect
+            # Landing page is now the Market Star Map (#starmap)
+            page.locator("#sm-sel-ticker").wait_for()
+            check(page.locator("#page-title")).to_have_text("Market Star Map")
+            check(page.locator("#sm-date-badge")).to_contain_text("489 stocks")
+            check(page.locator("#sm-up-list .row")).to_have_count(5)
+            # Test fuzzy search dropdown ("vda" -> NVDA) and ×10⁻³ scaled edge weights
+            page.fill("#sm-search", "vda")
+            check(page.locator("#sm-suggest .sm-suggest-item").first).to_contain_text("NVDA")
+            page.locator("#sm-suggest .sm-suggest-item").first.dispatch_event("mousedown")
+            check(page.locator("#sm-sel-ticker")).to_have_text("NVDA")
+            check(page.locator("#sm-up-list .row")).to_have_count(5)
+            check(page.locator("#sm-up-list .row").first).to_contain_text("+5.56")
+            page.wait_for_timeout(520)
+            page.evaluate("window.scrollTo(0,0)")
+            page.screenshot(path=REPORTS / "v2_starmap.png")
+            # Drill down from Star Map into Flow Explorer
+            page.get_by_role("link", name="Flow Explorer", exact=True).click()
+            page.locator("#content").wait_for()
             check(page.locator("#source-mode")).to_contain_text("Archived inference")
-            check(page.locator("#footer-gate")).to_have_text("Grounding test: " + evaluation["gate"])
             check(page.locator("#target-metric")).to_have_text("AAPL")
             check(page.locator("#senders .row")).to_have_count(5)
             check(page.locator("#date option")).to_have_count(12)
@@ -62,7 +78,7 @@ def test_judge_zip_and_screenshots():
                     page.fill("#pair", "NVDA")
                 page.click("#ask")
                 check(page.locator("#answer dd").first).to_be_visible()
-                check(page.locator("#answer small")).to_contain_text("archived output")
+                check(page.locator("#answer small")).to_contain_text("Archived output")
             page.locator("#senders button").nth(1).click()
             page.click("#mask")
             check(page.locator("#task")).to_have_value("COUNTERFACTUAL_COT")
@@ -121,9 +137,12 @@ def test_judge_zip_and_screenshots():
             phone = browser.new_page(viewport={"width": 390, "height": 844})
             phone.route("**/api/**", lambda r: r.fulfill(status=404, json={"detail": "Not Found"}))
             phone.goto(url)
+            check(phone.locator("#sm-sel-ticker")).to_have_text("AAPL")
+            assert phone.evaluate("document.documentElement.scrollWidth <= innerWidth")
+            phone.goto(url + "#explorer")
             check(phone.locator("#target-metric")).to_have_text("AAPL")
             phone.click("#mask")
-            check(phone.locator("#answer small")).to_contain_text("archived output")
+            check(phone.locator("#answer small")).to_contain_text("Archived output")
             browser.close()
 
 

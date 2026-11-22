@@ -1,5 +1,6 @@
 import { staticRequest } from "./archive.js";
 import { showMultiday } from "./multiday.js";
+import { showStarmap } from "./starmap.js";
 
 const $ = id => document.getElementById(id);
 const svgNS = "http://www.w3.org/2000/svg";
@@ -19,9 +20,13 @@ const state = {
 const base = (window.MARKETFLOW_API || "").replace(/\/$/, "");
 const fmt = n => Number(n).toPrecision(5);
 const signed = n => (n > 0 ? "+" : "") + fmt(n);
+const signedEdgeMilli = w => {
+  const v = Number(w) * 1000;
+  return (v > 0 ? "+" : "") + v.toFixed(2);
+};
 const number = n => new Intl.NumberFormat("en-US").format(n);
 const title = word => word.toLowerCase().replaceAll("_", " ").replace(/^./, c => c.toUpperCase());
-const pane = () => ["explorer", "replay", "multiday", "model"].includes(location.hash.slice(1)) ? location.hash.slice(1) : "explorer";
+const pane = () => ["starmap", "explorer", "replay", "multiday", "model"].includes(location.hash.slice(1)) ? location.hash.slice(1) : "starmap";
 
 function node(tag, value = "", className = "") {
   const el = document.createElement(tag);
@@ -50,9 +55,8 @@ async function request(path, body) {
     }
     offline = true;
     const catalog = await staticRequest("catalog");
-    const totalDays = catalog.dates.length * catalog.targets.length;
-    $("source-mode").textContent = `Archived inference · ${totalDays} stock-days`;
-    $("ask").textContent = "Show model answer";
+    $("source-mode").textContent = `Archived inference (${catalog.dates.length} dates, ${catalog.targets.length} stocks)`;
+    $("ask").textContent = "Read analysis";
     state.dates = catalog.dates;
     options($("date"), catalog.dates, true);
     const requested = new URL(path, "https://marketflow.invalid/").searchParams.get("date") || body?.date || state.date;
@@ -183,7 +187,7 @@ function renderDay() {
 
   const tel = d.telemetry;
   if (tel) {
-    $("score-sub").textContent = `seed-0 ${signed(tel.seed0_score)} · std ${fmt(tel.ens_std)}`;
+    $("score-sub").textContent = `Seed-0: ${signed(tel.seed0_score)} (4-seed std ${fmt(tel.ens_std)})`;
     $("tel-local").textContent = signed(tel.p_local);
     $("tel-flow").textContent = signed(tel.flow_delta);
     const lAbs = Math.abs(tel.p_local), fAbs = Math.abs(tel.flow_delta), tot = lAbs + fAbs || 1;
@@ -193,7 +197,7 @@ function renderDay() {
     $("driver-badge").textContent = fAbs / tot < 0.12 ? "LOCAL" : sameSign ? "REINFORCED" : "OFFSET";
     const netRole = tel.g_s - tel.g_r;
     $("role-badge").textContent = netRole > 0.05 ? "NET SENDER" : netRole < -0.05 ? "NET RECEIVER" : "BALANCED";
-    $("role-sub").textContent = `gs ${tel.g_s.toFixed(2)} · gr ${tel.g_r.toFixed(2)} · TV20 ${tel.role_tv_20d.toFixed(3)}`;
+    $("role-sub").innerHTML = `<span class="math"><var>g</var><sub><var>s</var></sub></span> = ${tel.g_s.toFixed(2)}, <span class="math"><var>g</var><sub><var>r</var></sub></span> = ${tel.g_r.toFixed(2)}, 20d shift ${tel.role_tv_20d.toFixed(3)}`;
   } else {
     $("score-sub").textContent = "Cross-sectional z-score";
     $("tel-local").textContent = "—";
@@ -204,12 +208,12 @@ function renderDay() {
   }
 
   $("universe").textContent = number(d.universe_size);
-  $("window").textContent = d.window_start + " — " + d.date;
+  $("window").textContent = d.window_start + " to " + d.date;
   $("mask-result").textContent = "Mask this edge to zero it out in DRIFT and recompute the score.";
   $("mask-box").classList.remove("is-active");
   $("canvas-hud").hidden = true;
   $("masked-key").hidden = true;
-  $("ask").textContent = offline ? "Show model answer" : "Run model";
+  $("ask").textContent = offline ? "Read analysis" : "Run model";
   $("answer").replaceChildren();
 
   renderSenders();
@@ -295,7 +299,8 @@ function renderSenders() {
     b.setAttribute("aria-pressed", String(e.source === state.selected));
     const bar = node("div", "", "row-bar " + (e.weight >= 0 ? "pos-bar" : "neg-bar"));
     bar.style.width = (100 * Math.abs(e.weight) / maxW).toFixed(1) + "%";
-    b.append(bar, node("span", e.source), node("span", signed(e.weight), e.weight >= 0 ? "pos" : "neg"));
+    b.append(bar, node("span", e.source), node("span", signedEdgeMilli(e.weight), e.weight >= 0 ? "pos" : "neg"));
+    b.title = `K[${state.target}, ${e.source}] = ${signed(e.weight)} (${signedEdgeMilli(e.weight)} × 10⁻³)`;
     b.onclick = () => selectSender(e.source);
     return b;
   }));
@@ -461,7 +466,7 @@ function drawNetworkFrame(now) {
     ctx.fillText(e.source, x + 1, y - 7);
     ctx.font = `600 ${compact ? 9 : 10}px "IBM Plex Mono", monospace`;
     ctx.fillStyle = severed ? "#be123c" : color;
-    ctx.fillText(severed ? "MASKED" : (e.weight >= 0 ? "+" : "") + e.weight.toFixed(4), x + 1, y + 9);
+    ctx.fillText(severed ? "MASKED" : signedEdgeMilli(e.weight), x + 1, y + 9);
   });
 
   // Crisp expanding rectangular pulse when newly masked
@@ -622,7 +627,7 @@ async function evaluate(action) {
     } catch (e) {
       if (current()) {
         stopProgress();
-        $("ask").textContent = offline ? "Show model answer" : "Run model";
+        $("ask").textContent = offline ? "Read analysis" : "Run model";
         $("mask-result").textContent = e.message;
         $("answer").replaceChildren();
       }
@@ -640,7 +645,7 @@ async function evaluate(action) {
 
     const card = node("div", "", "cot-card");
     const head = node("div", "", "cot-header");
-    head.append(node("strong", "DRIFT-TSLM v2.1"), node("span", task.replace("_COT", "").replaceAll("_", " "), "tag tag-navy"));
+    head.append(node("strong", "DRIFT-TSLM v1.0"), node("span", task.replace("_COT", "").replaceAll("_", " "), "tag tag-navy"));
     const body = node("p", r.reasoning, "cot-reasoning");
     const list = node("dl", "", "conclusions");
     for (const [k, v] of Object.entries(r.answer)) {
@@ -648,13 +653,13 @@ async function evaluate(action) {
       wrap.append(node("dt", title(k)), node("dd", String(v), verdictTone(v)));
       list.append(wrap);
     }
-    const meta = node("small", "Grounding test: " + r.grounding_gate + (r.cached ? " · archived output" : " · " + (r.inference_ms / 1000).toFixed(1) + " s"), "cot-meta");
+    const meta = node("small", r.cached ? "Archived output" : (r.inference_ms / 1000).toFixed(1) + " s", "cot-meta");
     card.append(head, body, list, meta);
     $("answer").replaceChildren(card);
   } catch (e) {
     if (current()) { stopProgress(); $("answer").replaceChildren(node("p", e.message, "notice")); }
   } finally {
-    if (current()) { stopProgress(); $("ask").textContent = offline ? "Show model answer" : "Run model"; }
+    if (current()) { stopProgress(); $("ask").textContent = offline ? "Read analysis" : "Run model"; }
   }
 }
 
@@ -669,7 +674,7 @@ function buildBenchmarkChart(result) {
     ["PAIRWISE_FORECAST_COT", "Paired forecast"],
   ];
   const series = [
-    { label: "DRIFT-TSLM v2.1", color: "#0b6e64", get: k => result.variants.drift.real[k].accuracy },
+    { label: "DRIFT-TSLM v1.0", color: "#0b6e64", get: k => result.variants.drift.real[k].accuracy },
     { label: "Returns-only baseline", color: "#1d4ed8", get: k => result.variants.returns.real[k].accuracy },
     { label: "Same-day shuffled", color: "#b45309", get: k => result.variants.drift.shuffled[k].accuracy },
     { label: "Zeroed tokens", color: "#be123c", get: k => result.variants.drift.zero[k].accuracy },
@@ -767,8 +772,8 @@ async function showModel() {
         ["Local only", result.variants.drift.local],
       ].map(([name, x]) => [name, ...keys.map(k => (100 * x[k].accuracy).toFixed(1) + "%")]);
       panel.append(table(["Input", ...keys.map(k => taskNames[k])], rows, 2));
-      panel.append(node("p", "Each diagnostic task must drop by at least 15 percentage points under both shuffled and zeroed controls. Checkpoints were picked on 2023 validation."));
-      const pairs = [["DRIFT-TSLM v2.1", "drift", "real"], ["Returns-only OpenTSLM + Qwen", "returns", "real"], ["Text-only Qwen", "text", "text"]];
+      panel.append(node("p", "Each diagnostic task must drop by at least 15% under both shuffled and zeroed controls. Checkpoints were picked on 2023 validation."));
+      const pairs = [["DRIFT-TSLM v1.0", "drift", "real"], ["Returns-only OpenTSLM + Qwen", "returns", "real"], ["Text-only Qwen", "text", "text"]];
       panel.append(node("h3", "Pairwise return ranking"),
         table(["Model", "Top/bottom quintile pairs", "Random whole-market pairs"], pairs.map(([name, variant, mode]) => {
           const metric = result.variants[variant][mode].PAIRWISE_FORECAST_COT;
@@ -786,9 +791,9 @@ async function showModel() {
         node("p", "Qwen compares its A and B logits at the JSON winner field after generating its own evidence. A positive margin favors the first stock."));
     }
     for (const c of result.examples || []) {
-      panel.append(node("h3", c.date + " · " + c.target + " · " + c.task.replace("_COT", "")), node("p", c.question));
+      panel.append(node("h3", c.target + " on " + c.date + " (" + title(c.task.replace("_COT", "")) + ")"), node("p", c.question));
       const comparison = node("div", "", "case-comparison");
-      for (const [name, key] of [["Returns-only baseline", "baseline"], ["DRIFT-TSLM v2.1", "drift"]]) {
+      for (const [name, key] of [["Returns-only baseline", "baseline"], ["DRIFT-TSLM v1.0", "drift"]]) {
         const item = node("article", "", "case-output" + (key === "drift" ? " is-drift" : ""));
         item.append(node("h4", name));
         const parts = c[key].match(/^<reasoning>([\s\S]*?)<\/reasoning>\s*<answer>([\s\S]*?)<\/answer>$/);
@@ -806,36 +811,51 @@ async function showModel() {
 
 function route() {
   stop();
-  const view = pane(), isModel = view === "model", isMultiday = view === "multiday";
+  const view = pane(), isStarmap = view === "starmap", isModel = view === "model", isMultiday = view === "multiday";
   for (const a of document.querySelectorAll("nav a")) {
     a.setAttribute("aria-current", a.hash === "#" + view ? "page" : "false");
   }
-  $("workspace").hidden = isModel || isMultiday;
+  $("starmap").hidden = !isStarmap;
+  $("workspace").hidden = isStarmap || isModel || isMultiday;
   $("multiday").hidden = !isMultiday;
   $("model").hidden = !isModel;
   $("source-wrap").hidden = isMultiday;
-  $("footer-gate").hidden = isMultiday;
-  $("md-footer").hidden = !isMultiday;
   $("transport").hidden = view !== "replay";
-  $("hero-kpis").hidden = isModel;
-  $("domain").textContent = isMultiday
-    ? "S&P 500 & CSI 300 · 5-day edge masking"
-    : "S&P 500 · Alpha158 · Qwen3.5-4B";
+  $("domain").textContent = {
+    starmap: "All 489 S&P 500 stocks on Jan 2, 2024",
+    explorer: "S&P 500 daily Alpha158 panel with Qwen3.5-4B",
+    replay: "S&P 500 daily Alpha158 panel with Qwen3.5-4B",
+    multiday: "Five-session edge masking across S&P 500 and CSI 300",
+    model: "Held-out 2024–2025 evaluation and paper benchmarks",
+  }[view];
   $("page-title").textContent = {
+    starmap: "Market Star Map",
     explorer: "Flow Explorer",
     replay: "Historical Replay",
     multiday: "Multi-Day Replay",
     model: "Model card",
   }[view];
   $("page-subtitle").textContent = {
+    starmap: "View all 489 S&P 500 stocks from Jan 2, 2024 in one map. Search or click any ticker to trace its five strongest upstream links, then open it in Flow Explorer.",
     explorer: "Pick a stock and date to inspect its five strongest inbound channels, mask an edge, and read what Qwen3.5-4B infers from the 25 DRIFT tokens alone.",
     replay: "Step through 12 test dates in 2024–2025 to see how inbound channels and flow memory change from session to session.",
     multiday: "Mask an upstream edge across five sessions—today only, all five days, or four days masked then reopened—to see how much effect persists in DRIFT’s state.",
     model: "Held-out 2024–2025 accuracy, shuffled and zeroed token controls, and the paper’s stock-ranking tables.",
   }[view];
-  document.title = "MarketFlow · " + $("page-title").textContent;
+  document.title = "MarketFlow — " + $("page-title").textContent;
   notice("");
-  if (isMultiday) { state.version++; showMultiday(); }
+  if (isStarmap) {
+    state.version++;
+    showStarmap({
+      onOpenExplorer: (date, ticker) => {
+        state.date = date;
+        state.target = ticker;
+        location.hash = "#explorer";
+        load(date, ticker);
+      },
+    });
+  }
+  else if (isMultiday) { state.version++; showMultiday(); }
   else if (isModel) { state.version++; showModel(); }
   else if (!state.day || state.busy) load(state.date, state.target);
   else startNetworkLoop();
@@ -861,7 +881,3 @@ $("task-pills").addEventListener("click", ev => {
 new ResizeObserver(() => { if (state.day && !$("workspace").hidden) startNetworkLoop(); }).observe($("network"));
 window.addEventListener("hashchange", route);
 route();
-
-fetch("./model-card.json").then(r => r.json()).then(c => {
-  if (c.evaluation) $("footer-gate").textContent = "Grounding test: " + c.evaluation.gate;
-}).catch(() => {});

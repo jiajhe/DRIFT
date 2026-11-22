@@ -9,7 +9,8 @@ DIST = HERE / "dist"
 OUT = HERE.parent / "reports/marketflow-static.zip"
 FILES = (
     "app.js", "archive.js", "config.js", "historical-demo.json", "index.html",
-    "model-card.json", "multiday-replay.json", "multiday.js", "style.css",
+    "model-card.json", "multiday-replay.json", "multiday.js", "starmap-demo.json",
+    "starmap.js", "style.css",
 )
 
 

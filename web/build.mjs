@@ -14,7 +14,7 @@ if (endpoint) {
 
 await mkdir(output, {recursive: true});
 const staging = await mkdtemp(join(output, ".building-"));
-const files = ["app.js", "archive.js", "multiday.js", "multiday-replay.json", "style.css", "model-card.json", "historical-demo.json", "index.html"];
+const files = ["app.js", "archive.js", "multiday.js", "multiday-replay.json", "starmap.js", "starmap-demo.json", "style.css", "model-card.json", "historical-demo.json", "index.html"];
 try {
   await Promise.all(files.map(name => copyFile(join(source, name), join(staging, name))));
   await writeFile(join(staging, "config.js"), "window.MARKETFLOW_API = " + JSON.stringify(endpoint) + ";\n");

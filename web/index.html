@@ -4,22 +4,23 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="theme-color" content="#f5f4ef">
-  <title>MarketFlow · DRIFT-TSLM v2.1</title>
+  <title>MarketFlow — DRIFT-TSLM v1.0</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' fill='%2312151a'/><rect x='6' y='15' width='4' height='11' fill='%230b6e64'/><rect x='14' y='7' width='4' height='19' fill='%23ffffff'/><rect x='22' y='11' width='4' height='15' fill='%23d97706'/></svg>">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="./style.css?v=6">
+  <link rel="stylesheet" href="./style.css?v=8">
 </head>
 <body>
   <header class="topbar">
     <div class="shell top">
-      <a class="brand" href="#explorer" aria-label="MarketFlow home">
+      <a class="brand" href="#starmap" aria-label="MarketFlow home">
         <span class="logomark" aria-hidden="true"><i></i><i></i><i></i></span>
         <span class="brand-text">MarketFlow</span>
-        <span class="version-tag">DRIFT-TSLM v2.1</span>
+        <span class="version-tag">DRIFT-TSLM v1.0</span>
       </a>
       <nav aria-label="Main">
+        <a href="#starmap">Star Map</a>
         <a href="#explorer">Flow Explorer</a>
         <a href="#replay">Replay</a>
         <a href="#multiday">Multi-Day Replay</a>
@@ -35,31 +36,129 @@
   <main class="shell">
     <section class="hero">
       <div class="hero-copy">
-        <span class="eyebrow" id="domain">S&amp;P 500 · Alpha158 · Qwen3.5-4B</span>
-        <h1 id="page-title">Flow Explorer</h1>
-        <p id="page-subtitle">Pick a stock and date to inspect its five strongest inbound channels, mask an edge, and read what Qwen3.5-4B infers from the 25 DRIFT tokens alone.</p>
-      </div>
-      <div class="hero-kpis" id="hero-kpis" aria-label="Held-out 2024 to 2025 summary">
-        <div class="kpi-cell">
-          <span class="kpi-val teal">84.5%</span>
-          <span class="kpi-lbl">Edge-mask accuracy <em>+63.3pp</em></span>
-        </div>
-        <div class="kpi-cell">
-          <span class="kpi-val navy">85.1%</span>
-          <span class="kpi-lbl">Role &amp; regime <em>+70.7pp</em></span>
-        </div>
-        <div class="kpi-cell">
-          <span class="kpi-val rust">157×20</span>
-          <span class="kpi-lbl">Factor window <em>Tokens only</em></span>
-        </div>
-        <div class="kpi-cell">
-          <span class="kpi-val teal">Passed</span>
-          <span class="kpi-lbl">Control checks <em>All 3 tasks</em></span>
-        </div>
+        <span class="eyebrow" id="domain">All 489 S&amp;P 500 stocks on Jan 2, 2024</span>
+        <h1 id="page-title">Market Star Map</h1>
+        <p id="page-subtitle">View all 489 S&amp;P 500 stocks from Jan 2, 2024 in one map. Search or click any ticker to trace its five strongest upstream links, then open it in Flow Explorer.</p>
       </div>
     </section>
 
     <p role="status" id="status" class="notice" hidden></p>
+
+    <section id="starmap" hidden aria-label="Cross-sectional market star map">
+      <div class="sm-toolbar sheet">
+        <form id="sm-search-form" class="sm-search-group">
+          <div class="sm-search-wrap">
+            <label class="field-lbl">Search ticker
+              <input id="sm-search" placeholder="AAPL, NVDA, JPM…" maxlength="16" autocomplete="off" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="sm-suggest">
+            </label>
+            <div id="sm-suggest" class="sm-suggest" role="listbox" hidden></div>
+          </div>
+          <button type="submit" class="btn-primary">Locate</button>
+          <button type="button" id="sm-clear" class="btn-ghost">Overview</button>
+        </form>
+        <div class="sm-controls-right">
+          <div class="sm-switch-group">
+            <span class="field-lbl">Layout</span>
+            <div id="sm-layout-switch" class="md-switch">
+              <button type="button" data-layout="constellation" aria-pressed="true">Constellation (<span class="math"><var>Z</var> + <var>K</var></span>)</button>
+              <button type="button" data-layout="role" aria-pressed="false">Role vs. Score</button>
+            </div>
+          </div>
+          <div class="sm-switch-group">
+            <span class="field-lbl">Color</span>
+            <div id="sm-color-switch" class="md-switch">
+              <button type="button" data-color="score" aria-pressed="true">DRIFT Score</button>
+              <button type="button" data-color="role" aria-pressed="false">Net Role</button>
+            </div>
+          </div>
+          <div class="sm-toggles">
+            <label class="sm-check"><input type="checkbox" id="sm-toggle-web" checked>Background web</label>
+            <label class="sm-check"><input type="checkbox" id="sm-toggle-down">Downstream</label>
+          </div>
+        </div>
+        <div class="sm-quick-row">
+          <span class="micro-note" id="sm-date-badge">Jan 2, 2024 — S&amp;P 500</span>
+          <div class="quick-tickers" id="sm-quick-chips" aria-label="Featured and hub stocks"></div>
+        </div>
+      </div>
+
+      <p role="status" id="sm-status" class="notice" hidden></p>
+
+      <div class="sm-grid">
+        <section class="panel sheet sm-canvas-panel">
+          <div class="panel-heading">
+            <div>
+              <span class="eyebrow">Cross-sectional snapshot on Jan 2, 2024</span>
+              <h2>S&amp;P 500 Market Star Map</h2>
+            </div>
+            <div class="sm-legend" id="sm-legend"></div>
+          </div>
+          <div class="sm-stage">
+            <canvas id="sm-canvas" aria-label="Interactive star map of S&P 500 stocks and their top-5 directed DRIFT upstream relationships. Scroll to zoom, drag to pan, or click any stock to inspect."></canvas>
+            <div class="sm-tooltip" id="sm-tooltip" hidden></div>
+            <div class="sm-zoom-hud" aria-label="Zoom controls">
+              <button type="button" id="sm-zoom-in" title="Zoom in">+</button>
+              <span id="sm-zoom-readout">1.0×</span>
+              <button type="button" id="sm-zoom-out" title="Zoom out">−</button>
+              <button type="button" id="sm-zoom-reset" title="Reset view">Reset</button>
+            </div>
+            <div class="sm-stage-tip">Scroll to zoom, drag to pan, or click any stock (weights in ×10⁻³).</div>
+          </div>
+        </section>
+
+        <aside class="panel sheet sm-inspector">
+          <div id="sm-inspector-empty">
+            <div class="panel-heading">
+              <div>
+                <span class="eyebrow">Most Connected</span>
+                <h2>Largest Senders</h2>
+              </div>
+              <span class="micro-note">Click to focus</span>
+            </div>
+            <p class="sm-intro">Each point is an S&amp;P 500 stock positioned by DRIFT’s 64-dim latent state <span class="math"><var>Z</var></span> and directed operator <span class="math"><var>K</var><sub><var>i</var>,<var>j</var></sub></span>. Larger points influence more downstream stocks.</p>
+            <div id="sm-top-hubs" class="sm-hub-list"></div>
+          </div>
+
+          <div id="sm-inspector-body" hidden>
+            <div class="panel-heading">
+              <div>
+                <span class="eyebrow">Selected Stock</span>
+                <h2 id="sm-sel-ticker">AAPL</h2>
+              </div>
+              <span class="tag tag-teal" id="sm-sel-role">NET SENDER</span>
+            </div>
+
+            <div class="sm-metrics">
+              <div class="sm-metric-box">
+                <span class="stat-label">DRIFT 4-seed</span>
+                <strong id="sm-sel-score">+0.0000</strong>
+              </div>
+              <div class="sm-metric-box">
+                <span class="stat-label">Local / Flow</span>
+                <strong class="sm-lf"><span id="sm-sel-local">—</span> / <span id="sm-sel-flow">—</span></strong>
+              </div>
+            </div>
+            <p class="sm-role-line" id="sm-sel-role-nums"></p>
+
+            <div class="sm-section-head">
+              <span class="eyebrow">Top 5 Upstream Senders, <span class="math"><var>K</var><sub><var>i</var>,<var>j</var></sub></span> (<span class="math">×10<sup>−3</sup></span>)</span>
+              <span class="micro-note">Click to focus</span>
+            </div>
+            <div id="sm-up-list" class="sender-list"></div>
+
+            <div class="sm-section-head">
+              <span class="eyebrow">Downstream Targets (<span class="math">×10<sup>−3</sup></span>)</span>
+              <span class="micro-note" id="sm-down-count">0 stocks</span>
+            </div>
+            <div id="sm-down-list" class="sm-down-grid"></div>
+
+            <div class="sm-cta">
+              <button type="button" id="sm-open-explorer" class="btn-copilot">Open in Flow Explorer →</button>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </section>
 
     <div id="workspace">
       <form id="filters" class="command-bar sheet">
@@ -113,7 +212,7 @@
             <section class="panel sheet graph-panel">
               <div class="panel-heading">
                 <div>
-                  <span class="eyebrow">Cross-stock operator K[i, j]</span>
+                  <span class="eyebrow">Directed operator <span class="math"><var>K</var><sub><var>i</var>,<var>j</var></sub></span> (<span class="math">×10<sup>−3</sup></span>)</span>
                   <h2>Inbound Flow Graph</h2>
                 </div>
                 <div class="legend">
@@ -125,11 +224,11 @@
               <div class="canvas-stage">
                 <canvas id="network" aria-label="Directed edges from the five upstream stocks into the target. Click any sender to inspect or mask it."></canvas>
                 <div class="canvas-hud" id="canvas-hud" hidden></div>
-                <div class="canvas-tip">Click a sender box to select its channel</div>
+                <div class="canvas-tip">Click a sender to inspect or mask it</div>
               </div>
               <div class="panel-foot">
                 <span id="window"></span>
-                <span>Weight scale ∝ |K[i, j]| · seed-0 checkpoint</span>
+                <span>Weights in <span class="math">×10<sup>−3</sup></span>, scaled by <span class="math">|<var>K</var><sub><var>i</var>,<var>j</var></sub>|</span> (seed-0 model)</span>
               </div>
             </section>
 
@@ -152,12 +251,12 @@
               <section class="panel sheet">
                 <div class="panel-heading">
                   <div>
-                    <span class="eyebrow">State update F<sub>t</sub></span>
+                    <span class="eyebrow">State update <span class="math"><var>F</var><sub><var>t</var></sub></span></span>
                     <h2>Flow Memory</h2>
                   </div>
                 </div>
                 <div id="components" class="bars"></div>
-                <p class="caption">L2 norms of carried retention, same-day transmission, and multi-day relay.</p>
+                <p class="caption"><span class="math">L<sub>2</sub></span> norms of carried retention, same-day transmission, and multi-day relay.</p>
               </section>
             </div>
           </div>
@@ -166,12 +265,12 @@
             <section class="panel sheet">
               <div class="panel-heading">
                 <div>
-                  <span class="eyebrow">Top 5 by |K[i, j]|</span>
+                  <span class="eyebrow">Top 5 by <span class="math">|<var>K</var><sub><var>i</var>,<var>j</var></sub>|</span></span>
                   <h2>Upstream Senders</h2>
                 </div>
                 <span class="micro-note">Select a row</span>
               </div>
-              <div class="table-head"><span>Sender</span><span>Signed weight</span></div>
+              <div class="table-head"><span>Sender</span><span>Weight (<span class="math">×10<sup>−3</sup></span>)</span></div>
               <div id="senders" class="sender-list"></div>
               <div class="intervention">
                 <button class="btn-sever" id="mask" type="button">Mask selected edge</button>
@@ -184,10 +283,9 @@
             <section class="panel sheet readout-panel">
               <div class="panel-heading">
                 <div>
-                  <span class="eyebrow navy-text">Qwen3.5-4B · 25 DRIFT tokens</span>
+                  <span class="eyebrow navy-text">Qwen3.5-4B reading 25 DRIFT tokens</span>
                   <h2>Model Readout</h2>
                 </div>
-                <span class="tag tag-navy" title="No edge weights, norms, or scores appear in text prompts">No numbers in prompt</span>
               </div>
 
               <div class="task-tabs" id="task-pills" role="tablist" aria-label="Question types">
@@ -249,12 +347,12 @@
       <div id="md-results" hidden>
         <div class="md-readouts" aria-live="polite">
           <article class="md-metric md-a">
-            <div class="md-label"><b id="md-name-a">Sender A</b> <span>· Day 5 Δscore</span></div>
+            <div class="md-label"><b id="md-name-a">Sender A</b> <span>(Day 5 score shift)</span></div>
             <strong id="md-delta-a"></strong>
             <p id="md-edge-a"></p>
           </article>
           <article class="md-metric md-b">
-            <div class="md-label"><b id="md-name-b">Sender B</b> <span>· Day 5 Δscore</span></div>
+            <div class="md-label"><b id="md-name-b">Sender B</b> <span>(Day 5 score shift)</span></div>
             <strong id="md-delta-b"></strong>
             <p id="md-edge-b"></p>
           </article>
@@ -281,7 +379,7 @@
         <details id="md-details" class="panel sheet">
           <summary>Daily recomputed scores</summary>
           <div class="md-table-tools">
-            <span>Seed-0 scores · Δ = masked − unmasked</span>
+            <span>Seed-0 scores (<span class="math">Δ</span> = masked minus unmasked)</span>
             <label><input type="checkbox" id="md-precision">Full precision</label>
           </div>
           <div class="md-scroll">
@@ -307,14 +405,7 @@
       <div id="model-content"></div>
     </section>
   </main>
-
-  <footer class="shell">
-    <span>MarketFlow · DRIFT-TSLM v2.1</span>
-    <span id="footer-gate"></span>
-    <span id="md-footer" hidden>Frozen DRIFT · seed 0</span>
-    <span>TimeNet Hackathon · Round 1</span>
-  </footer>
   <script src="./config.js"></script>
-  <script type="module" src="./app.js?v=6"></script>
+  <script type="module" src="./app.js?v=8"></script>
 </body>
 </html>
