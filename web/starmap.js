@@ -1,10 +1,10 @@
-// Market Star Map: interactive 3D galactic-disk visualization of S&P 500 DRIFT flows.
+// Market Star Map: interactive 3D volumetric sphere of S&P 500 DRIFT flows.
 const $ = id => document.getElementById(id);
 
 const FEATURED = ["AAPL", "NVDA", "MSFT", "GOOGL", "AMZN", "META", "TSLA", "JPM"];
-const DEFAULT_PITCH = 0.74; // ~42 deg tilted galactic plane (not a hollow sphere)
-const DEFAULT_YAW = -0.35;
-const CAM_DIST = 3.25;
+const DEFAULT_PITCH = 0.24; // gentle 3D camera elevation
+const DEFAULT_YAW = -0.42;
+const CAM_DIST = 3.15;
 
 const sm = {
   data: null,
@@ -15,14 +15,14 @@ const sm = {
   hubRank: [],
   selectedIdx: -1,
   hoveredIdx: -1,
-  layout: "constellation", // "constellation" (3D galaxy disk) | "role" (flat 2D quadrant)
+  layout: "constellation", // "constellation" (3D sphere volume) | "role" (flat 2D quadrant)
   colorBy: "score",        // "score" | "role"
   showWeb: true,
   showDownstream: false,
   autoSpin: true,
   spinResumeAt: 0,
-  // 3D orbital camera around focal target (tx, ty, tz)
-  cam: { tx: 0, ty: 0, tz: 0, yaw: DEFAULT_YAW, pitch: DEFAULT_PITCH, zoom: 1.08 },
+  // 3D spherical orbit camera around focal target (tx, ty, tz)
+  cam: { tx: 0, ty: 0, tz: 0, yaw: DEFAULT_YAW, pitch: DEFAULT_PITCH, zoom: 1.04 },
   targetCam: null,
   // Angular momentum for silky drag inertia
   velYaw: 0,
@@ -170,35 +170,35 @@ function nodeEl(tag, text = "", cls = "") {
 }
 
 function getScale(w, h) {
-  return Math.min(w, h) * 0.45 * sm.cam.zoom;
+  return Math.min(w, h) * 0.42 * sm.cam.zoom;
 }
 
-// Project 3D galactic-disk coordinates (wx, wy, wz) into screen space.
+// Standard 3D spherical orbit projection: yaw around vertical Y, pitch around X.
 function project3D(wx, wy, wz, w, h) {
   const dx = wx - sm.cam.tx;
   const dy = wy - sm.cam.ty;
   const dz = wz - sm.cam.tz;
-  const cyaw = Math.cos(sm.cam.yaw), syaw = Math.sin(sm.cam.yaw);
+  const cy = Math.cos(sm.cam.yaw), sy = Math.sin(sm.cam.yaw);
   const cp = Math.cos(sm.cam.pitch), sp = Math.sin(sm.cam.pitch);
 
-  // Spin around galactic axis Z
-  const rx = dx * cyaw - dy * syaw;
-  const ry = dx * syaw + dy * cyaw;
-  const rz = dz;
+  // Rotate around vertical Y axis
+  const x1 = dx * cy + dz * sy;
+  const y1 = dy;
+  const z1 = -dx * sy + dz * cy;
 
-  // Tilt galactic plane by pitch (0 = top-down, ~1.35 = near edge-on)
-  const cy = ry * cp + rz * sp;
-  const cz = -ry * sp + rz * cp;
+  // Tilt around horizontal X axis
+  const x2 = x1;
+  const y2 = y1 * cp - z1 * sp;
+  const z2 = y1 * sp + z1 * cp;
 
-  const persp = sm.layout === "role" && Math.abs(sm.cam.pitch) < 0.02
-    ? 1.0
-    : CAM_DIST / Math.max(0.55, CAM_DIST - cz);
+  const flat2D = sm.layout === "role" && Math.abs(sm.cam.pitch) < 0.01 && Math.abs(sm.cam.yaw) < 0.01;
+  const persp = flat2D ? 1.0 : CAM_DIST / Math.max(0.6, CAM_DIST - z2);
   const s = getScale(w, h) * persp;
-  return [w * 0.5 + rx * s, h * 0.5 - cy * s, cz, persp];
+  return [w * 0.5 + x2 * s, h * 0.5 - y2 * s, z2, persp];
 }
 
 function nodeRadius(n) {
-  return 2.3 + Math.min(4.6, Math.sqrt(n.out) * 0.92);
+  return 2.3 + Math.min(4.6, Math.sqrt(n.out) * 0.90);
 }
 
 function nodeColor(n) {
@@ -214,7 +214,7 @@ function nodeColor(n) {
   return "#fda4af";
 }
 
-function flyTo(idx, maxZoom = 3.2) {
+function flyTo(idx, maxZoom = 2.6) {
   if (idx < 0 || idx >= sm.nodes.length) return;
   const canvas = $("sm-canvas");
   const w = canvas?.clientWidth || 800, h = canvas?.clientHeight || 590;
@@ -222,28 +222,23 @@ function flyTo(idx, maxZoom = 3.2) {
   for (const [srcIdx] of sm.nodes[idx].in_edges) {
     pts.push(sm.targetPos[srcIdx] || sm.pos[srcIdx]);
   }
-  let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity, sumZ = 0;
+  let sx = 0, sy = 0, sz = 0;
+  for (const [px, py, pz] of pts) { sx += px; sy += py; sz += pz || 0; }
+  const cx = sx / pts.length, cy = sy / pts.length, cz = sz / pts.length;
+  let maxR = 0.16;
   for (const [px, py, pz] of pts) {
-    if (px < minX) minX = px;
-    if (px > maxX) maxX = px;
-    if (py < minY) minY = py;
-    if (py > maxY) maxY = py;
-    sumZ += pz || 0;
+    const d = Math.hypot(px - cx, py - cy, (pz || 0) - cz);
+    if (d > maxR) maxR = d;
   }
-  const cx = (minX + maxX) * 0.5;
-  const cy = (minY + maxY) * 0.5;
-  const cz = sumZ / pts.length;
-  const span = Math.max(0.24, Math.hypot(maxX - minX, maxY - minY));
-  const baseScale = Math.min(w, h) * 0.45;
-  const fitZoom = (Math.min(w, h) * 0.68) / (span * baseScale);
-  const zoom = clamp(fitZoom, 1.25, maxZoom);
-  const targetPitch = sm.layout === "role" ? 0 : clamp(sm.cam.pitch, 0.35, 0.85);
+  const baseScale = Math.min(w, h) * 0.42;
+  const fitZoom = (Math.min(w, h) * 0.36) / (maxR * baseScale);
+  const zoom = clamp(fitZoom, 1.15, maxZoom);
   sm.velYaw = 0;
   sm.velPitch = 0;
   sm.targetCam = {
     tx: cx, ty: cy, tz: cz,
     yaw: sm.layout === "role" ? 0 : sm.cam.yaw,
-    pitch: targetPitch,
+    pitch: sm.layout === "role" ? 0 : sm.cam.pitch,
     zoom,
     startTx: sm.cam.tx, startTy: sm.cam.ty, startTz: sm.cam.tz,
     startYaw: sm.cam.yaw, startPitch: sm.cam.pitch, startZoom: sm.cam.zoom,
@@ -262,7 +257,7 @@ function resetCamera() {
     tx: 0, ty: 0, tz: 0,
     yaw: isRole ? 0 : sm.cam.yaw,
     pitch: isRole ? 0 : DEFAULT_PITCH,
-    zoom: isRole ? 1.0 : 1.08,
+    zoom: isRole ? 1.0 : 1.04,
     startTx: sm.cam.tx, startTy: sm.cam.ty, startTz: sm.cam.tz,
     startYaw: sm.cam.yaw, startPitch: sm.cam.pitch, startZoom: sm.cam.zoom,
     startTime: performance.now(),
@@ -271,7 +266,7 @@ function resetCamera() {
   ensureLoop();
 }
 
-function selectNode(idx, { fly = true, zoom = 3.2 } = {}) {
+function selectNode(idx, { fly = true, zoom = 2.6 } = {}) {
   sm.selectedIdx = idx;
   if (idx >= 0) {
     const n = sm.nodes[idx];
@@ -306,7 +301,7 @@ function setLayout(mode) {
     tz: sm.selectedIdx >= 0 ? focus[2] : 0,
     yaw: mode === "role" ? 0 : DEFAULT_YAW,
     pitch: mode === "role" ? 0 : DEFAULT_PITCH,
-    zoom: sm.selectedIdx >= 0 ? Math.min(sm.cam.zoom, 2.4) : (mode === "role" ? 1.0 : 1.08),
+    zoom: sm.selectedIdx >= 0 ? Math.min(sm.cam.zoom, 2.2) : (mode === "role" ? 1.0 : 1.04),
     startTx: sm.cam.tx, startTy: sm.cam.ty, startTz: sm.cam.tz,
     startYaw: sm.cam.yaw, startPitch: sm.cam.pitch, startZoom: sm.cam.zoom,
     startTime: performance.now(),
@@ -360,7 +355,7 @@ function renderQuickChips() {
     const b = nodeEl("button", sym, "ticker-pill");
     b.type = "button";
     b.setAttribute("aria-pressed", String(sym === current));
-    b.onclick = () => selectNode(sm.byId.get(sym), { fly: true, zoom: 3.0 });
+    b.onclick = () => selectNode(sm.byId.get(sym), { fly: true, zoom: 2.4 });
     return b;
   }));
 }
@@ -381,7 +376,7 @@ function renderInspector() {
         nodeEl("span", `${n.out} downstream`, "sm-hub-meta"),
         nodeEl("span", signedShort(n.s), n.s >= 0 ? "pos" : "neg"),
       );
-      b.onclick = () => selectNode(idx, { fly: true, zoom: 3.0 });
+      b.onclick = () => selectNode(idx, { fly: true, zoom: 2.4 });
       return b;
     }));
     return;
@@ -417,7 +412,7 @@ function renderInspector() {
       nodeEl("span", signedEdgeMilli(w), w >= 0 ? "pos" : "neg"),
     );
     b.title = `K[${n.id}, ${src.id}] = ${signedEdgeMilli(w)} × 10⁻³ (click to focus ${src.id})`;
-    b.onclick = () => selectNode(srcIdx, { fly: true, zoom: Math.max(sm.cam.zoom, 3.0) });
+    b.onclick = () => selectNode(srcIdx, { fly: true, zoom: Math.max(sm.cam.zoom, 2.4) });
     return b;
   }));
 
@@ -433,7 +428,7 @@ function renderInspector() {
       b.type = "button";
       b.append(nodeEl("span", dst.id), nodeEl("small", signedEdgeMilli(w), w >= 0 ? "pos" : "neg"));
       b.title = `K[${dst.id}, ${n.id}] = ${signedEdgeMilli(w)} × 10⁻³ (click to focus ${dst.id})`;
-      b.onclick = () => selectNode(dstIdx, { fly: true, zoom: Math.max(sm.cam.zoom, 3.0) });
+      b.onclick = () => selectNode(dstIdx, { fly: true, zoom: Math.max(sm.cam.zoom, 2.4) });
       return b;
     }));
   }
@@ -449,55 +444,52 @@ function renderInspector() {
   };
 }
 
-function drawGalacticPlaneGuides(ctx, w, h) {
-  const [ox, oy, , opersp] = project3D(0, 0, 0, w, h);
-  const scale = getScale(w, h) * opersp;
-
-  // Soft tilted galactic core nebula glow (flat disk ellipse, not a ball)
+// Draw subtle 3D volumetric bounding sphere guides (outer rim + 3 faint great circles).
+function drawSphereVolumeGuides(ctx, w, h) {
+  const [ox, oy, oz, opersp] = project3D(0, 0, 0, w, h);
+  const R = 1.0;
+  // Soft volumetric glow inside the sphere core
+  const dCenter = Math.max(0.8, CAM_DIST - oz);
+  const apparentR = getScale(w, h) * (CAM_DIST * R / Math.sqrt(Math.max(0.25, dCenter * dCenter - R * R * 0.35)));
   ctx.save();
-  const flatY = Math.max(0.20, Math.cos(sm.cam.pitch));
-  ctx.translate(ox, oy);
-  ctx.scale(1, flatY);
-  const coreR = scale * 1.02;
-  const nebula = ctx.createRadialGradient(0, 0, 2, 0, 0, coreR);
-  nebula.addColorStop(0, "rgba(45, 212, 191, 0.15)");
-  nebula.addColorStop(0.42, "rgba(56, 189, 248, 0.065)");
-  nebula.addColorStop(0.75, "rgba(99, 102, 241, 0.03)");
-  nebula.addColorStop(1, "rgba(8, 12, 20, 0)");
-  ctx.fillStyle = nebula;
+  const volGlow = ctx.createRadialGradient(ox, oy, 4, ox, oy, apparentR);
+  volGlow.addColorStop(0, "rgba(45, 212, 191, 0.09)");
+  volGlow.addColorStop(0.55, "rgba(56, 189, 248, 0.04)");
+  volGlow.addColorStop(0.92, "rgba(148, 163, 184, 0.02)");
+  volGlow.addColorStop(1, "rgba(8, 12, 20, 0)");
+  ctx.fillStyle = volGlow;
   ctx.beginPath();
-  ctx.arc(0, 0, coreR, 0, Math.PI * 2);
+  ctx.arc(ox, oy, apparentR, 0, Math.PI * 2);
   ctx.fill();
-  ctx.restore();
 
-  // Concentric 3D orbital rings lying flat in the galactic plane z = 0
-  ctx.save();
+  // Outer spherical boundary silhouette
+  ctx.strokeStyle = "rgba(148, 163, 184, 0.14)";
   ctx.lineWidth = 1;
-  const segs = 96;
-  for (const r of [0.34, 0.68, 1.0]) {
-    ctx.strokeStyle = r === 1.0 ? "rgba(148, 163, 184, 0.19)" : "rgba(148, 163, 184, 0.11)";
+  ctx.beginPath();
+  ctx.arc(ox, oy, apparentR, 0, Math.PI * 2);
+  ctx.stroke();
+
+  // Three faint orthogonal great circles (equator + two meridians) rotating with the 3D volume
+  const segs = 80;
+  const circles = [
+    a => [Math.cos(a), 0, Math.sin(a)], // XZ equator
+    a => [Math.cos(a), Math.sin(a), 0], // XY meridian
+    a => [0, Math.sin(a), Math.cos(a)], // YZ meridian
+  ];
+  ctx.strokeStyle = "rgba(148, 163, 184, 0.075)";
+  for (const fn of circles) {
     ctx.beginPath();
     for (let k = 0; k <= segs; k++) {
       const a = (k / segs) * Math.PI * 2;
-      const [px, py] = project3D(Math.cos(a) * r, Math.sin(a) * r, 0, w, h);
+      const [gx, gy, gz] = fn(a);
+      const [px, py] = project3D(gx * R, gy * R, gz * R, w, h);
       if (k === 0) ctx.moveTo(px, py);
       else ctx.lineTo(px, py);
     }
     ctx.stroke();
   }
-
-  // Faint radial spokes on the galactic plane so rotation is immediately legible
-  ctx.strokeStyle = "rgba(148, 163, 184, 0.075)";
-  for (let k = 0; k < 6; k++) {
-    const a = (k / 6) * Math.PI;
-    const [x1, y1] = project3D(Math.cos(a) * 1.0, Math.sin(a) * 1.0, 0, w, h);
-    const [x2, y2] = project3D(-Math.cos(a) * 1.0, -Math.sin(a) * 1.0, 0, w, h);
-    ctx.beginPath();
-    ctx.moveTo(x1, y1);
-    ctx.lineTo(x2, y2);
-    ctx.stroke();
-  }
   ctx.restore();
+  void opersp;
 }
 
 function drawFrame(now) {
@@ -527,14 +519,14 @@ function drawFrame(now) {
     // Apply smooth drag inertia
     if (Math.abs(sm.velYaw) > 1e-5 || Math.abs(sm.velPitch) > 1e-5) {
       sm.cam.yaw += sm.velYaw;
-      sm.cam.pitch = clamp(sm.cam.pitch + sm.velPitch, 0.06, 1.38);
+      sm.cam.pitch = clamp(sm.cam.pitch + sm.velPitch, -1.25, 1.25);
       sm.velYaw *= 0.92;
       sm.velPitch *= 0.90;
       animating = true;
     }
-    // Gentle continuous galactic disk auto-rotation
+    // Gentle continuous 3D sphere rotation
     if (sm.autoSpin && !reducedMotion && now >= sm.spinResumeAt) {
-      const spinRate = sm.selectedIdx >= 0 && sm.cam.zoom > 1.8 ? 0.000085 : 0.00017;
+      const spinRate = sm.selectedIdx >= 0 && sm.cam.zoom > 1.6 ? 0.000095 : 0.00018;
       sm.cam.yaw += dt * spinRate;
       animating = true;
     }
@@ -573,9 +565,8 @@ function drawFrame(now) {
   ctx.fillStyle = bg;
   ctx.fillRect(0, 0, w, h);
 
-  // Plane guides
   if (sm.layout === "constellation") {
-    drawGalacticPlaneGuides(ctx, w, h);
+    drawSphereVolumeGuides(ctx, w, h);
   } else {
     const [ox, oy] = project3D(0, 0, 0, w, h);
     ctx.save();
@@ -626,9 +617,9 @@ function drawFrame(now) {
     ctx.save();
     ctx.lineWidth = 0.8;
     for (const [u, v, wt] of sm.data.skeleton) {
-      const depthAlpha = clamp(0.55 + 0.45 * ((sp[u] + sp[v]) * 0.5 - 0.7), 0.35, 1.0);
+      const depthAlpha = clamp(0.45 + 0.55 * ((sp[u] + sp[v]) * 0.5 - 0.65), 0.25, 1.0);
       ctx.strokeStyle = hasFocus
-        ? `rgba(148, 163, 184, ${(0.045 * depthAlpha).toFixed(3)})`
+        ? `rgba(148, 163, 184, ${(0.042 * depthAlpha).toFixed(3)})`
         : (wt >= 0
           ? `rgba(45, 212, 191, ${(0.14 * depthAlpha).toFixed(3)})`
           : `rgba(244, 63, 94, ${(0.13 * depthAlpha).toFixed(3)})`);
@@ -656,38 +647,29 @@ function drawFrame(now) {
     ctx.restore();
   }
 
-  // Layer 3: Focused stock's Top-5 upstream 3D arcs with traveling light pulses
+  // Layer 3: Focused stock's Top-5 upstream 3D links (near-straight so 3D length stays faithful)
   const badgeBoxes = [];
   if (hasFocus) {
     const fNode = sm.nodes[focusIdx];
     const maxW = Math.max(...fNode.in_edges.map(e => Math.abs(e[1]))) || 1;
     const tx = sx[focusIdx], ty = sy[focusIdx];
-    const tPos = sm.pos[focusIdx];
-    const badgeTs = [0.36, 0.54, 0.44, 0.64, 0.30];
+    const badgeTs = [0.42, 0.56, 0.34, 0.64, 0.48];
     fNode.in_edges.forEach(([srcIdx, wt], rank) => {
       const fx = sx[srcIdx], fy = sy[srcIdx];
-      const fPos = sm.pos[srcIdx];
-      // Midpoint arches gently above the galactic plane in 3D space
-      const midW = [
-        (fPos[0] + tPos[0]) * 0.5,
-        (fPos[1] + tPos[1]) * 0.5,
-        (fPos[2] + tPos[2]) * 0.5 + (sm.layout === "constellation" ? 0.06 + (rank % 2) * 0.025 : 0),
-      ];
-      let [mx, my] = project3D(midW[0], midW[1], midW[2], w, h);
-      // Small lateral curve offset in screen space so co-linear arcs separate cleanly
       const dx = tx - fx, dy = ty - fy;
       const dist = Math.hypot(dx, dy) || 1;
-      const curve = (rank % 2 === 0 ? 1 : -1) * Math.min(28, dist * 0.13);
-      mx -= (dy / dist) * curve;
-      my += (dx / dist) * curve;
+      // Very subtle curve just to separate co-linear links while preserving true distance perception
+      const curve = (rank % 2 === 0 ? 1 : -1) * Math.min(14, dist * 0.06);
+      const mx = (fx + tx) * 0.5 - (dy / dist) * curve;
+      const my = (fy + ty) * 0.5 + (dx / dist) * curve;
 
       const col = wt >= 0 ? "#2dd4bf" : "#fb7185";
       const strength = Math.abs(wt) / maxW;
 
       ctx.save();
       ctx.strokeStyle = col;
-      ctx.globalAlpha = 0.5 + 0.48 * strength;
-      ctx.lineWidth = 1.2 + 1.8 * strength;
+      ctx.globalAlpha = 0.52 + 0.46 * strength;
+      ctx.lineWidth = 1.25 + 1.75 * strength;
       ctx.beginPath();
       ctx.moveTo(fx, fy);
       ctx.quadraticCurveTo(mx, my, tx, ty);
@@ -715,7 +697,6 @@ function drawFrame(now) {
         const bu = 1 - bt;
         let bx = bu * bu * fx + 2 * bu * bt * mx + bt * bt * tx;
         let by = bu * bu * fy + 2 * bu * bt * my + bt * bt * ty;
-        // Nudge badge vertically if it overlaps a previously placed edge badge
         for (let tries = 0; tries < 6; tries++) {
           const hit = badgeBoxes.some(([ox, oy, ow, oh]) =>
             Math.abs(bx - ox) < (lw + ow) * 0.54 && Math.abs(by - oy) < (lh + oh) * 0.56
@@ -739,7 +720,7 @@ function drawFrame(now) {
     if (!reducedMotion) animating = true;
   }
 
-  // Layer 4: Depth-sorted 3D Star Nodes (back-to-front painter's order)
+  // Layer 4: Depth-sorted 3D Volumetric Star Nodes (back-to-front painter's order)
   const order = Array.from({ length: count }, (_, i) => i).sort((a, b) => sz[a] - sz[b]);
   for (let k = 0; k < count; k++) {
     const i = order[k];
@@ -749,12 +730,12 @@ function drawFrame(now) {
     const isFocus = i === focusIdx;
     const isUp = upstreamSet.has(i);
     const isDown = downstreamSet.has(i);
-    const baseR = nodeRadius(n) * Math.min(1.65, 0.82 + sm.cam.zoom * 0.14) * clamp(persp, 0.62, 1.55);
+    const baseR = nodeRadius(n) * Math.min(1.65, 0.84 + sm.cam.zoom * 0.14) * clamp(persp, 0.58, 1.55);
 
     ctx.save();
-    const depthFade = clamp(0.45 + 0.55 * ((persp - 0.68) / 0.55), 0.38, 1.0);
+    const depthFade = clamp(0.32 + 0.68 * ((persp - 0.65) / 0.62), 0.28, 1.0);
     if (hasFocus && !isFocus && !isUp && !isDown) {
-      ctx.globalAlpha = 0.22 * depthFade;
+      ctx.globalAlpha = 0.24 * depthFade;
     } else {
       ctx.globalAlpha = isFocus || isUp ? 0.98 : 0.94 * depthFade;
     }
@@ -789,13 +770,23 @@ function drawFrame(now) {
   const tryLabel = (idx, priority = false) => {
     const px = sx[idx], py = sy[idx], persp = sp[idx];
     if (px < 18 || px > w - 18 || py < 14 || py > h - 14) return;
+    if (!priority && persp < 0.78) return; // keep far back-side labels quiet for clear 3D depth
     const text = sm.nodes[idx].id;
-    const r = nodeRadius(sm.nodes[idx]) * Math.min(1.65, 0.82 + sm.cam.zoom * 0.14) * clamp(persp, 0.65, 1.5);
-    const lx = px, ly = py - r - 8;
+    const r = nodeRadius(sm.nodes[idx]) * Math.min(1.65, 0.84 + sm.cam.zoom * 0.14) * clamp(persp, 0.62, 1.5);
+    const lx = px;
+    let ly = py - r - 8;
     const boxW = text.length * 6.8 + 8, boxH = 14;
     if (!priority) {
       for (const [bx, by, bw, bh] of placed) {
         if (Math.abs(lx - bx) < (boxW + bw) * 0.52 && Math.abs(ly - by) < (boxH + bh) * 0.55) return;
+      }
+    } else {
+      for (let tries = 0; tries < 4; tries++) {
+        const hit = placed.some(([bx, by, bw, bh]) =>
+          Math.abs(lx - bx) < (boxW + bw) * 0.52 && Math.abs(ly - by) < (boxH + bh) * 0.58
+        );
+        if (!hit) break;
+        ly = tries % 2 === 0 ? py + r + 11 : ly - 15;
       }
     }
     placed.push([lx, ly, boxW, boxH]);
@@ -821,11 +812,11 @@ function drawFrame(now) {
       for (const [dstIdx] of (sm.downstream[focusIdx] || []).slice(0, 10)) tryLabel(dstIdx, false);
     }
   }
-  if (sm.cam.zoom >= 2.2) {
+  if (sm.cam.zoom >= 2.0) {
     for (const sym of FEATURED) {
       if (sm.byId.has(sym)) tryLabel(sm.byId.get(sym), false);
     }
-    for (const idx of sm.hubRank.slice(0, hasFocus ? 22 : 36)) tryLabel(idx, false);
+    for (const idx of sm.hubRank.slice(0, hasFocus ? 20 : 32)) tryLabel(idx, false);
   } else {
     for (const sym of FEATURED) {
       if (sm.byId.has(sym)) tryLabel(sm.byId.get(sym), false);
@@ -906,18 +897,19 @@ function bindEvents() {
 
       if (sm.dragPan) {
         const s = getScale(rect.width, rect.height);
-        const cyaw = Math.cos(sm.cam.yaw), syaw = Math.sin(sm.cam.yaw);
-        const cp = Math.max(0.28, Math.cos(sm.cam.pitch));
-        const wx = -dx / s;
-        const wy = dy / (s * cp);
-        sm.cam.tx += wx * cyaw + wy * syaw;
-        sm.cam.ty += -wx * syaw + wy * cyaw;
+        const cy = Math.cos(sm.cam.yaw), sy = Math.sin(sm.cam.yaw);
+        const cp = Math.cos(sm.cam.pitch), sp = Math.sin(sm.cam.pitch);
+        const vx = -dx / s, vy = dy / s;
+        // Inverse camera rotation for smooth screen-plane panning
+        sm.cam.tx += vx * cy - vy * sp * sy;
+        sm.cam.ty += vy * cp;
+        sm.cam.tz += vx * sy + vy * sp * cy;
       } else {
-        // Drag to orbit & tilt the 3D galactic disk
-        const dYaw = dx * 0.0062;
-        const dPitch = -dy * 0.0052;
+        // Drag to freely orbit the 3D sphere
+        const dYaw = dx * 0.0064;
+        const dPitch = dy * 0.0056;
         sm.cam.yaw += dYaw;
-        sm.cam.pitch = clamp(sm.cam.pitch + dPitch, 0.06, 1.38);
+        sm.cam.pitch = clamp(sm.cam.pitch + dPitch, -1.25, 1.25);
         sm.velYaw = sm.velYaw * 0.4 + dYaw * 0.6;
         sm.velPitch = sm.velPitch * 0.4 + dPitch * 0.6;
       }
@@ -953,10 +945,10 @@ function bindEvents() {
     canvas.style.cursor = sm.hoveredIdx >= 0 ? "pointer" : "grab";
     if (!sm.dragMoved) {
       const hit = hitTest(e.clientX, e.clientY);
-      if (hit >= 0) selectNode(hit, { fly: true, zoom: Math.max(sm.cam.zoom, 2.8) });
+      if (hit >= 0) selectNode(hit, { fly: true, zoom: Math.max(sm.cam.zoom, 2.4) });
       else selectNode(-1, { fly: false });
     } else {
-      sm.spinResumeAt = performance.now() + 1600;
+      sm.spinResumeAt = performance.now() + 1500;
       ensureLoop();
     }
   });
