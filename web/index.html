@@ -3,13 +3,13 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="theme-color" content="#f5f4ef">
+  <meta name="theme-color" content="#f3ede2">
   <title>MarketFlow — DRIFT-TSLM v1.0</title>
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' fill='%2312151a'/><rect x='6' y='15' width='4' height='11' fill='%230b6e64'/><rect x='14' y='7' width='4' height='19' fill='%23ffffff'/><rect x='22' y='11' width='4' height='15' fill='%23d97706'/></svg>">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' fill='%231a1613'/><rect x='6' y='15' width='4' height='11' fill='%230f6b5e'/><rect x='14' y='7' width='4' height='19' fill='%23fdfbf7'/><rect x='22' y='11' width='4' height='15' fill='%23c86428'/></svg>">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="./style.css?v=8">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./style.css?v=9">
 </head>
 <body>
   <header class="topbar">
@@ -36,9 +36,9 @@
   <main class="shell">
     <section class="hero">
       <div class="hero-copy">
-        <span class="eyebrow" id="domain">All 489 S&amp;P 500 stocks on Jan 2, 2024</span>
+        <span class="eyebrow" id="domain">01 — All 489 S&amp;P 500 stocks on Jan 2, 2024</span>
         <h1 id="page-title">Market Star Map</h1>
-        <p id="page-subtitle">View all 489 S&amp;P 500 stocks from Jan 2, 2024 in one map. Search or click any ticker to trace its five strongest upstream links, then open it in Flow Explorer.</p>
+        <p id="page-subtitle">View all 489 S&amp;P 500 stocks from Jan 2, 2024 in a 3D sphere. Rotate, zoom, or search any ticker to trace its five strongest upstream links, then open it in Flow Explorer.</p>
       </div>
     </section>
 
@@ -94,11 +94,11 @@
             <div class="sm-legend" id="sm-legend"></div>
           </div>
           <div class="sm-stage">
-            <canvas id="sm-canvas" aria-label="Interactive star map of S&P 500 stocks and their top-5 directed DRIFT upstream relationships. Scroll to zoom, drag to pan, or click any stock to inspect."></canvas>
+            <canvas id="sm-canvas" aria-label="Interactive 3D star map of S&P 500 stocks and their top-5 directed DRIFT upstream relationships. Drag to rotate, scroll to zoom, or click any stock to inspect."></canvas>
             <div class="sm-tooltip" id="sm-tooltip" hidden></div>
             <div class="sm-zoom-hud" aria-label="View controls">
               <button type="button" id="sm-zoom-in" title="Zoom in">+</button>
-              <span id="sm-zoom-readout">1.1×</span>
+              <span id="sm-zoom-readout">1.0×</span>
               <button type="button" id="sm-zoom-out" title="Zoom out">−</button>
               <button type="button" id="sm-spin-toggle" aria-pressed="true" title="Toggle auto-rotation">Pause</button>
               <button type="button" id="sm-zoom-reset" title="Reset view">Reset</button>
@@ -116,7 +116,7 @@
               </div>
               <span class="micro-note">Click to focus</span>
             </div>
-            <p class="sm-intro">Each point is an S&amp;P 500 stock positioned by DRIFT’s 64-dim latent state <span class="math"><var>Z</var></span> and directed operator <span class="math"><var>K</var><sub><var>i</var>,<var>j</var></sub></span>. Larger points influence more downstream stocks.</p>
+            <p class="sm-intro">Each point is an S&amp;P 500 stock positioned inside a 3D sphere by DRIFT’s 64-dim latent state <span class="math"><var>Z</var></span> and directed operator <span class="math"><var>K</var><sub><var>i</var>,<var>j</var></sub></span>. Larger points influence more downstream stocks.</p>
             <div id="sm-top-hubs" class="sm-hub-list"></div>
           </div>
 
@@ -159,6 +159,52 @@
           </div>
         </aside>
       </div>
+
+      <section class="editorial-band" aria-label="Dataset and system overview">
+        <div class="editorial-stats">
+          <div class="ed-stat">
+            <span class="ed-num">489</span>
+            <span class="ed-title">S&amp;P 500 stocks</span>
+            <span class="ed-desc">Full point-in-time cross-section mapped inside the 3D sphere.</span>
+          </div>
+          <div class="ed-stat">
+            <span class="ed-num">157</span>
+            <span class="ed-title">Alpha158 factors</span>
+            <span class="ed-desc">Twenty-session OHLCV factor windows fed into frozen DRIFT.</span>
+          </div>
+          <div class="ed-stat">
+            <span class="ed-num">2,445</span>
+            <span class="ed-title">Directed channels</span>
+            <span class="ed-desc">Top-5 inbound links per stock with 3D length tracking <span class="math">|<var>K</var><sub><var>i</var>,<var>j</var></sub>|</span>.</span>
+          </div>
+          <div class="ed-stat">
+            <span class="ed-num">1,344</span>
+            <span class="ed-title">Saved Qwen3.5-4B runs</span>
+            <span class="ed-desc">Offline answers across four tasks, 12 test dates, and 8 core stocks.</span>
+          </div>
+        </div>
+
+        <div class="editorial-chapters">
+          <a class="chapter-card" href="#explorer">
+            <span class="eyebrow">02 — Channel Intervention</span>
+            <h3>Flow Explorer</h3>
+            <p>Mask any upstream link, recompute the frozen DRIFT score, and read Qwen3.5-4B’s explanation from 25 numeric tokens alone.</p>
+            <span class="chapter-link">Inspect single-day flows →</span>
+          </a>
+          <a class="chapter-card" href="#multiday">
+            <span class="eyebrow">03 — Persistent Memory</span>
+            <h3>Multi-Day Replay</h3>
+            <p>Mask two upstream channels across five sessions in S&amp;P 500 and CSI 300, then reopen them on day five to see residual flow memory.</p>
+            <span class="chapter-link">Compare US &amp; China replays →</span>
+          </a>
+          <a class="chapter-card" href="#model">
+            <span class="eyebrow">04 — Held-Out Evidence</span>
+            <h3>Model card</h3>
+            <p>Review 2024–2025 accuracy across all four tasks, shuffled and zeroed token controls, pairwise logits, and paper four-seed rankings.</p>
+            <span class="chapter-link">Read full benchmarks →</span>
+          </a>
+        </div>
+      </section>
     </section>
 
     <div id="workspace">
@@ -407,6 +453,6 @@
     </section>
   </main>
   <script src="./config.js"></script>
-  <script type="module" src="./app.js?v=8"></script>
+  <script type="module" src="./app.js?v=9"></script>
 </body>
 </html>

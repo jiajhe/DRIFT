@@ -272,21 +272,21 @@ function renderSparkline() {
     return el;
   };
   const y0 = y(0);
-  mk("line", { x1: padL, y1: y0, x2: w - padR, y2: y0, stroke: "#9ca3af", "stroke-dasharray": "3 3" });
-  mk("text", { x: padL - 6, y: y(hi) + 4, "text-anchor": "end", fill: "#6b7280", "font-size": 10, "font-family": "var(--mono)" }, `${hi.toFixed(0)}%`);
+  mk("line", { x1: padL, y1: y0, x2: w - padR, y2: y0, stroke: "#9e907e", "stroke-dasharray": "3 3" });
+  mk("text", { x: padL - 6, y: y(hi) + 4, "text-anchor": "end", fill: "#7c7063", "font-size": 10, "font-family": "var(--mono)" }, `${hi.toFixed(0)}%`);
   if (Math.abs(y0 - y(hi)) > 14 && Math.abs(y(lo) - y0) > 14) {
-    mk("text", { x: padL - 6, y: y0 + 3, "text-anchor": "end", fill: "#4b5563", "font-size": 10, "font-family": "var(--mono)" }, "0%");
+    mk("text", { x: padL - 6, y: y0 + 3, "text-anchor": "end", fill: "#584e43", "font-size": 10, "font-family": "var(--mono)" }, "0%");
   }
-  mk("text", { x: padL - 6, y: y(lo) + 3, "text-anchor": "end", fill: "#6b7280", "font-size": 10, "font-family": "var(--mono)" }, `${lo.toFixed(0)}%`);
+  mk("text", { x: padL - 6, y: y(lo) + 3, "text-anchor": "end", fill: "#7c7063", "font-size": 10, "font-family": "var(--mono)" }, `${lo.toFixed(0)}%`);
 
   if (sS) {
     const ptsS = sS.map((v, i) => `${x(i).toFixed(1)},${y(v).toFixed(1)}`).join(" ");
-    mk("polyline", { points: ptsS, fill: "none", stroke: "#0b6e64", "stroke-width": 1.9, "stroke-dasharray": "4 3" });
+    mk("polyline", { points: ptsS, fill: "none", stroke: "#0f6b5e", "stroke-width": 1.9, "stroke-dasharray": "4 3" });
   }
   const ptsT = sT.map((v, i) => `${x(i).toFixed(1)},${y(v).toFixed(1)}`).join(" ");
-  mk("polyline", { points: ptsT, fill: "none", stroke: "#b45309", "stroke-width": 2.3 });
-  mk("rect", { x: x(sT.length - 1) - 3, y: y(sT.at(-1)) - 3, width: 6, height: 6, fill: "#b45309" });
-  if (sS) mk("rect", { x: x(sS.length - 1) - 2.5, y: y(sS.at(-1)) - 2.5, width: 5, height: 5, fill: "#0b6e64" });
+  mk("polyline", { points: ptsT, fill: "none", stroke: "#b84a1e", "stroke-width": 2.3 });
+  mk("rect", { x: x(sT.length - 1) - 3, y: y(sT.at(-1)) - 3, width: 6, height: 6, fill: "#b84a1e" });
+  if (sS) mk("rect", { x: x(sS.length - 1) - 2.5, y: y(sS.at(-1)) - 2.5, width: 5, height: 5, fill: "#0f6b5e" });
   $("spark-caption").textContent = `${d.target} vs. ${sender} over the last 20 trading days.`;
 }
 
@@ -355,8 +355,8 @@ function drawNetworkFrame(now) {
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   ctx.clearRect(0, 0, w, h);
 
-  // Subtle architectural grid
-  ctx.strokeStyle = "rgba(18, 21, 26, 0.045)";
+  // Subtle warm archival grid
+  ctx.strokeStyle = "rgba(26, 22, 19, 0.05)";
   ctx.lineWidth = 1;
   const step = 32;
   for (let gx = step; gx < w; gx += step) {
@@ -383,7 +383,7 @@ function drawNetworkFrame(now) {
     const active = e.source === state.selected;
     const hovered = e.source === state.hoveredSender;
     const severed = e.source === state.maskedSender;
-    const color = e.weight >= 0 ? "#0b6e64" : "#be123c";
+    const color = e.weight >= 0 ? "#0f6b5e" : "#a61c3c";
 
     const [startX, startY] = boxAnchor(x, y, nodeW / 2 + 2, nodeH / 2 + 2, ux, uy);
     const [endX, endY] = boxAnchor(cx, cy, hubW / 2 + 5, hubH / 2 + 5, -ux, -uy);
@@ -391,7 +391,7 @@ function drawNetworkFrame(now) {
     ctx.save();
     if (severed) {
       ctx.setLineDash([5, 4]);
-      ctx.strokeStyle = "#be123c";
+      ctx.strokeStyle = "#a61c3c";
       ctx.lineWidth = 1.8;
     } else {
       ctx.strokeStyle = active || hovered ? color : color + "85";
@@ -417,7 +417,6 @@ function drawNetworkFrame(now) {
         ctx.fillRect(px - sz / 2, py - sz / 2, sz, sz);
         ctx.restore();
       }
-      // Sharp arrowhead
       ctx.fillStyle = active ? color : color + "aa";
       ctx.beginPath();
       ctx.moveTo(endX, endY);
@@ -427,12 +426,12 @@ function drawNetworkFrame(now) {
       ctx.fill();
     } else {
       const mx = (startX + endX) / 2, my = (startY + endY) / 2;
-      ctx.fillStyle = "#fdf2f4";
-      ctx.strokeStyle = "#be123c";
+      ctx.fillStyle = "#faedf0";
+      ctx.strokeStyle = "#a61c3c";
       ctx.lineWidth = 1.5;
       ctx.fillRect(mx - 9, my - 9, 18, 18);
       ctx.strokeRect(mx - 9, my - 9, 18, 18);
-      ctx.fillStyle = "#be123c";
+      ctx.fillStyle = "#a61c3c";
       ctx.font = '700 10px "IBM Plex Mono", monospace';
       ctx.textAlign = "center"; ctx.textBaseline = "middle";
       ctx.fillText("✕", mx, my + 0.5);
@@ -445,36 +444,34 @@ function drawNetworkFrame(now) {
     const active = e.source === state.selected;
     const hovered = e.source === state.hoveredSender;
     const severed = e.source === state.maskedSender;
-    const color = e.weight >= 0 ? "#0b6e64" : "#be123c";
+    const color = e.weight >= 0 ? "#0f6b5e" : "#a61c3c";
     const left = Math.round(x - nodeW / 2) + 0.5;
     const top = Math.round(y - nodeH / 2) + 0.5;
 
-    ctx.fillStyle = severed ? "#fdf2f4" : active ? "#fdf6ec" : "#ffffff";
+    ctx.fillStyle = severed ? "#faedf0" : active ? "#faefe8" : "#fdfbf7";
     ctx.fillRect(left, top, nodeW, nodeH);
 
-    // Left 3px polarity accent strip
-    ctx.fillStyle = severed ? "#be123c" : active ? "#b45309" : color;
+    ctx.fillStyle = severed ? "#a61c3c" : active ? "#b84a1e" : color;
     ctx.fillRect(left, top, 3.5, nodeH);
 
-    ctx.strokeStyle = severed ? "#be123c" : active ? "#12151a" : hovered ? "#4b5563" : "#c7c3ba";
+    ctx.strokeStyle = severed ? "#a61c3c" : active ? "#1a1613" : hovered ? "#584e43" : "#cfc4b2";
     ctx.lineWidth = active ? 1.8 : 1;
     ctx.strokeRect(left, top, nodeW, nodeH);
 
     ctx.font = `700 ${compact ? 11 : 13}px "IBM Plex Mono", monospace`;
     ctx.textAlign = "center"; ctx.textBaseline = "middle";
-    ctx.fillStyle = "#12151a";
+    ctx.fillStyle = "#1a1613";
     ctx.fillText(e.source, x + 1, y - 7);
     ctx.font = `600 ${compact ? 9 : 10}px "IBM Plex Mono", monospace`;
-    ctx.fillStyle = severed ? "#be123c" : color;
+    ctx.fillStyle = severed ? "#a61c3c" : color;
     ctx.fillText(severed ? "MASKED" : signedEdgeMilli(e.weight), x + 1, y + 9);
   });
 
-  // Crisp expanding rectangular pulse when newly masked
   if (state.maskedSender && now - state.shockStart < 1000) {
     const p = (now - state.shockStart) / 1000;
     const pad = p * 26;
     ctx.save();
-    ctx.strokeStyle = "#be123c";
+    ctx.strokeStyle = "#a61c3c";
     ctx.globalAlpha = 1 - p;
     ctx.lineWidth = 1.8;
     ctx.strokeRect(cx - hubW / 2 - pad, cy - hubH / 2 - pad, hubW + pad * 2, hubH + pad * 2);
@@ -484,22 +481,21 @@ function drawNetworkFrame(now) {
   // Pass 3: Sharp Target Hub Box
   const hLeft = Math.round(cx - hubW / 2) + 0.5;
   const hTop = Math.round(cy - hubH / 2) + 0.5;
-  ctx.fillStyle = "#ffffff";
+  ctx.fillStyle = "#fdfbf7";
   ctx.fillRect(hLeft, hTop, hubW, hubH);
-  // Top charcoal band for TARGET label
-  ctx.fillStyle = "#12151a";
+  ctx.fillStyle = "#1a1613";
   ctx.fillRect(hLeft, hTop, hubW, 17);
-  ctx.strokeStyle = "#12151a";
+  ctx.strokeStyle = "#1a1613";
   ctx.lineWidth = 2;
   ctx.strokeRect(hLeft, hTop, hubW, hubH);
 
   ctx.font = '600 9px "IBM Plex Mono", monospace';
   ctx.textAlign = "center"; ctx.textBaseline = "middle";
-  ctx.fillStyle = "#ffffff";
+  ctx.fillStyle = "#fdfbf7";
   ctx.fillText("TARGET", cx, hTop + 9);
 
   ctx.font = `700 ${compact ? 14 : 16}px "IBM Plex Mono", monospace`;
-  ctx.fillStyle = "#12151a";
+  ctx.fillStyle = "#1a1613";
   ctx.fillText(state.target, cx, hTop + 36);
 }
 
@@ -674,10 +670,10 @@ function buildBenchmarkChart(result) {
     ["PAIRWISE_FORECAST_COT", "Paired forecast"],
   ];
   const series = [
-    { label: "DRIFT-TSLM v1.0", color: "#0b6e64", get: k => result.variants.drift.real[k].accuracy },
-    { label: "Returns-only baseline", color: "#1d4ed8", get: k => result.variants.returns.real[k].accuracy },
-    { label: "Same-day shuffled", color: "#b45309", get: k => result.variants.drift.shuffled[k].accuracy },
-    { label: "Zeroed tokens", color: "#be123c", get: k => result.variants.drift.zero[k].accuracy },
+    { label: "DRIFT-TSLM v1.0", color: "#0f6b5e", get: k => result.variants.drift.real[k].accuracy },
+    { label: "Returns-only baseline", color: "#29487d", get: k => result.variants.returns.real[k].accuracy },
+    { label: "Same-day shuffled", color: "#b84a1e", get: k => result.variants.drift.shuffled[k].accuracy },
+    { label: "Zeroed tokens", color: "#a61c3c", get: k => result.variants.drift.zero[k].accuracy },
   ];
   const w = 960, h = 252, left = 52, right = 24, top = 36, bottom = 42;
   svg.setAttribute("viewBox", `0 0 ${w} ${h}`);
@@ -822,11 +818,11 @@ function route() {
   $("source-wrap").hidden = isMultiday;
   $("transport").hidden = view !== "replay";
   $("domain").textContent = {
-    starmap: "All 489 S&P 500 stocks on Jan 2, 2024",
-    explorer: "S&P 500 daily Alpha158 panel with Qwen3.5-4B",
-    replay: "S&P 500 daily Alpha158 panel with Qwen3.5-4B",
-    multiday: "Five-session edge masking across S&P 500 and CSI 300",
-    model: "Held-out 2024–2025 evaluation and paper benchmarks",
+    starmap: "01 — All 489 S&P 500 stocks on Jan 2, 2024",
+    explorer: "02 — S&P 500 daily Alpha158 panel with Qwen3.5-4B",
+    replay: "02 — Historical Alpha158 sessions with Qwen3.5-4B",
+    multiday: "03 — Five-session edge masking across S&P 500 and CSI 300",
+    model: "04 — Held-out 2024–2025 evaluation and paper benchmarks",
   }[view];
   $("page-title").textContent = {
     starmap: "Market Star Map",
@@ -836,7 +832,7 @@ function route() {
     model: "Model card",
   }[view];
   $("page-subtitle").textContent = {
-    starmap: "View all 489 S&P 500 stocks from Jan 2, 2024 in one map. Search or click any ticker to trace its five strongest upstream links, then open it in Flow Explorer.",
+    starmap: "View all 489 S&P 500 stocks from Jan 2, 2024 in a 3D sphere. Rotate, zoom, or search any ticker to trace its five strongest upstream links, then open it in Flow Explorer.",
     explorer: "Pick a stock and date to inspect its five strongest inbound channels, mask an edge, and read what Qwen3.5-4B infers from the 25 DRIFT tokens alone.",
     replay: "Step through 12 test dates in 2024–2025 to see how inbound channels and flow memory change from session to session.",
     multiday: "Mask an upstream edge across five sessions—today only, all five days, or four days masked then reopened—to see how much effect persists in DRIFT’s state.",

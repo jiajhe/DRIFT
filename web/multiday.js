@@ -53,11 +53,11 @@ function draw() {
   svg.replaceChildren();
   const defs = mark(svg, "defs", {});
   const ga = mark(defs, "linearGradient", { id: "mdGradA", x1: 0, y1: 0, x2: 0, y2: 1 });
-  mark(ga, "stop", { offset: "0%", "stop-color": "#0b6e64", "stop-opacity": "0.14" });
-  mark(ga, "stop", { offset: "100%", "stop-color": "#0b6e64", "stop-opacity": "0.01" });
+  mark(ga, "stop", { offset: "0%", "stop-color": "#0f6b5e", "stop-opacity": "0.15" });
+  mark(ga, "stop", { offset: "100%", "stop-color": "#0f6b5e", "stop-opacity": "0.01" });
   const gb = mark(defs, "linearGradient", { id: "mdGradB", x1: 0, y1: 0, x2: 0, y2: 1 });
-  mark(gb, "stop", { offset: "0%", "stop-color": "#b45309", "stop-opacity": "0.12" });
-  mark(gb, "stop", { offset: "100%", "stop-color": "#b45309", "stop-opacity": "0.01" });
+  mark(gb, "stop", { offset: "0%", "stop-color": "#b84a1e", "stop-opacity": "0.13" });
+  mark(gb, "stop", { offset: "100%", "stop-color": "#b84a1e", "stop-opacity": "0.01" });
 
   mark(svg, "title", { id: "md-chart-title" }, c.target + " score differences for " + stocks.join(" and ") + ". " + explanation[mode]);
   mark(svg, "rect", { x: x(4) - (narrow ? 20 : 36), y: 12, width: narrow ? 40 : 72, height: bottom - 4, class: "md-final-band" });

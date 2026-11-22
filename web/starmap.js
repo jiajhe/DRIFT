@@ -205,12 +205,12 @@ function nodeColor(n) {
   if (sm.colorBy === "role") {
     const net = n.gs - n.gr;
     if (net > 0.04) return "#2dd4bf";
-    if (net < -0.04) return "#f59e0b";
-    return "#94a3b8";
+    if (net < -0.04) return "#e09132";
+    return "#a89b8c";
   }
   if (n.s >= 0.35) return "#14b8a6";
   if (n.s >= 0.0) return "#5eead4";
-  if (n.s <= -0.35) return "#f43f5e";
+  if (n.s <= -0.35) return "#f45d72";
   return "#fda4af";
 }
 
@@ -448,35 +448,35 @@ function renderInspector() {
 function drawSphereVolumeGuides(ctx, w, h) {
   const [ox, oy, oz, opersp] = project3D(0, 0, 0, w, h);
   const R = 1.0;
-  // Soft volumetric glow inside the sphere core
+  // Soft warm volumetric glow inside the sphere core
   const dCenter = Math.max(0.8, CAM_DIST - oz);
   const apparentR = getScale(w, h) * (CAM_DIST * R / Math.sqrt(Math.max(0.25, dCenter * dCenter - R * R * 0.35)));
   ctx.save();
   const volGlow = ctx.createRadialGradient(ox, oy, 4, ox, oy, apparentR);
-  volGlow.addColorStop(0, "rgba(45, 212, 191, 0.09)");
-  volGlow.addColorStop(0.55, "rgba(56, 189, 248, 0.04)");
-  volGlow.addColorStop(0.92, "rgba(148, 163, 184, 0.02)");
-  volGlow.addColorStop(1, "rgba(8, 12, 20, 0)");
+  volGlow.addColorStop(0, "rgba(218, 158, 92, 0.11)");
+  volGlow.addColorStop(0.45, "rgba(45, 212, 191, 0.05)");
+  volGlow.addColorStop(0.90, "rgba(218, 198, 170, 0.025)");
+  volGlow.addColorStop(1, "rgba(13, 11, 9, 0)");
   ctx.fillStyle = volGlow;
   ctx.beginPath();
   ctx.arc(ox, oy, apparentR, 0, Math.PI * 2);
   ctx.fill();
 
-  // Outer spherical boundary silhouette
-  ctx.strokeStyle = "rgba(148, 163, 184, 0.14)";
+  // Warm champagne outer spherical boundary silhouette
+  ctx.strokeStyle = "rgba(218, 198, 170, 0.18)";
   ctx.lineWidth = 1;
   ctx.beginPath();
   ctx.arc(ox, oy, apparentR, 0, Math.PI * 2);
   ctx.stroke();
 
-  // Three faint orthogonal great circles (equator + two meridians) rotating with the 3D volume
+  // Three faint orthogonal great circles rotating with the 3D volume
   const segs = 80;
   const circles = [
     a => [Math.cos(a), 0, Math.sin(a)], // XZ equator
     a => [Math.cos(a), Math.sin(a), 0], // XY meridian
     a => [0, Math.sin(a), Math.cos(a)], // YZ meridian
   ];
-  ctx.strokeStyle = "rgba(148, 163, 184, 0.075)";
+  ctx.strokeStyle = "rgba(218, 198, 170, 0.085)";
   for (const fn of circles) {
     ctx.beginPath();
     for (let k = 0; k <= segs; k++) {
@@ -558,10 +558,10 @@ function drawFrame(now) {
   const ctx = canvas.getContext("2d");
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-  // Deep observatory dark backdrop
+  // Warm obsidian-espresso observatory backdrop
   const bg = ctx.createRadialGradient(w * 0.5, h * 0.5, 20, w * 0.5, h * 0.5, Math.max(w, h) * 0.74);
-  bg.addColorStop(0, "#101726");
-  bg.addColorStop(1, "#070b13");
+  bg.addColorStop(0, "#1c1713");
+  bg.addColorStop(1, "#0d0b09");
   ctx.fillStyle = bg;
   ctx.fillRect(0, 0, w, h);
 
