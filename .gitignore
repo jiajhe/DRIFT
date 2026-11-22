@@ -5,5 +5,10 @@ __pycache__/
 /code/runs/
 /.venv/
 /code/.venv/
+/checkpoints/TSLM_training/
+/web/public-treasury.json
+/web/.vercel/
+.env.local
 *.log
 .DS_Store
+/367_DRIFT_Directed_Role_Factor.pdf

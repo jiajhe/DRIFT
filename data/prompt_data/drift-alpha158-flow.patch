@@ -1,0 +1,987 @@
+diff --git a/packages/timenet-connectors/src/timenet_connectors/datasets/10eit/__init__.py b/packages/timenet-connectors/src/timenet_connectors/datasets/10eit/__init__.py
+new file mode 100644
+index 0000000..ed2116e
+--- /dev/null
++++ b/packages/timenet-connectors/src/timenet_connectors/datasets/10eit/__init__.py
+@@ -0,0 +1 @@
++"""Financial time-series connectors maintained by 10eit."""
+diff --git a/packages/timenet-connectors/src/timenet_connectors/datasets/10eit/drift_alpha158_flow/README.md b/packages/timenet-connectors/src/timenet_connectors/datasets/10eit/drift_alpha158_flow/README.md
+new file mode 100644
+index 0000000..e024690
+--- /dev/null
++++ b/packages/timenet-connectors/src/timenet_connectors/datasets/10eit/drift_alpha158_flow/README.md
+@@ -0,0 +1,13 @@
++# DRIFT Alpha158 stock-flow records
++
++This restricted connector reads a user-supplied OHLCV and task bundle. The code can be distributed independently of the research price data. With access to the DRIFT research source, run the four-seed history export, the v2 task builder, and `data/prompt_data/export_drift_v2_timef.py` in the DRIFT workspace. Set `DRIFT_ALPHA158_BUNDLE` to the resulting `drift-alpha158-flow-input` directory.
++
++The connector verifies the two source hashes, computes all 157 raw factors using pandas and NumPy, and stores 20 trading sessions per signal. A target and its comparison stock have complete factor panels. The five upstream names have daily returns and five price/volume factors. Use the record's `factor_order` and `trading_dates` annotations to reconstruct a panel. Missing factor values retain their original NaN semantics.
++
++```bash
++timenet-build build 10eit/drift-alpha158-flow --no-isolation --local-registry .timenet-registry
++```
++
++The release covers 30 core stocks in 11 sectors over 2018–2025. Each of the 240 observations has four AnswerTasks. There are 600 training, 120 validation and 240 test tasks. Future outcomes occur only in task supervision.
++
++A team-hosted HTTPS directory containing the same two pinned files can be used through `DRIFT_ALPHA158_BUNDLE_URL`. The original local-directory setting has priority. For immediate anonymous access, `10eit/drift-alpha158-flow-public` builds the matched public-price subset directly from Kaggle's version 613 snapshot.
+diff --git a/packages/timenet-connectors/src/timenet_connectors/datasets/10eit/drift_alpha158_flow/__init__.py b/packages/timenet-connectors/src/timenet_connectors/datasets/10eit/drift_alpha158_flow/__init__.py
+new file mode 100644
+index 0000000..33432a0
+--- /dev/null
++++ b/packages/timenet-connectors/src/timenet_connectors/datasets/10eit/drift_alpha158_flow/__init__.py
+@@ -0,0 +1,7 @@
++"""Build the research-source DRIFT stock-flow replay."""
++
++from importlib import import_module
++
++
++# The organization ID begins with a digit, so static import resolution cannot represent its path.
++CONNECTOR = import_module(".connector", __name__).CONNECTOR  # ruff: ignore[non-empty-init-module]
+diff --git a/packages/timenet-connectors/src/timenet_connectors/datasets/10eit/drift_alpha158_flow/alpha158.py b/packages/timenet-connectors/src/timenet_connectors/datasets/10eit/drift_alpha158_flow/alpha158.py
+new file mode 100644
+index 0000000..7c41751
+--- /dev/null
++++ b/packages/timenet-connectors/src/timenet_connectors/datasets/10eit/drift_alpha158_flow/alpha158.py
+@@ -0,0 +1,167 @@
++"""Alpha158-US OHLCV factors in the original Qlib column order, without VWAP0."""
++
++import numpy as np
++import pandas as pd
++
++
++WINDOWS = (5, 10, 20, 30, 60)
++FAMILIES = (
++    "ROC",
++    "MA",
++    "STD",
++    "BETA",
++    "RSQR",
++    "RESI",
++    "MAX",
++    "MIN",
++    "QTLU",
++    "QTLD",
++    "RANK",
++    "RSV",
++    "IMAX",
++    "IMIN",
++    "IMXD",
++    "CORR",
++    "CORD",
++    "CNTP",
++    "CNTN",
++    "CNTD",
++    "SUMP",
++    "SUMN",
++    "SUMD",
++    "VMA",
++    "VSTD",
++    "WVMA",
++    "VSUMP",
++    "VSUMN",
++    "VSUMD",
++)
++CANDLE = (
++    "KMID",
++    "KLEN",
++    "KMID2",
++    "KUP",
++    "KUP2",
++    "KLOW",
++    "KLOW2",
++    "KSFT",
++    "KSFT2",
++    "OPEN0",
++    "HIGH0",
++    "LOW0",
++)
++ORDER = [*CANDLE, *[f + w for f in FAMILIES for w in map(str, WINDOWS)]]
++
++
++def compute_alpha158_ohlcv(frame):  # ruff: ignore[too-many-locals] -- one output column per explicit Qlib formula
++    """Compute the 157 factor columns of the published US DRIFT input."""
++    if not frame.index.is_monotonic_increasing or not frame.index.is_unique:
++        raise ValueError("Supply one instrument sorted by unique trading day")
++    o, h, low, c, v = (frame[k].astype("float32") for k in ("open", "high", "low", "close", "volume"))
++    eps = 1e-12
++    spread = h - low
++    upper = h - np.maximum(o, c)
++    lower = np.minimum(o, c) - low
++    shift = 2 * c - h - low
++    out = dict(
++        zip(
++            CANDLE,
++            [
++                (c - o) / o,
++                spread / o,
++                (c - o) / (spread + eps),
++                upper / o,
++                upper / (spread + eps),
++                lower / o,
++                lower / (spread + eps),
++                shift / o,
++                shift / (spread + eps),
++                o / c,
++                h / c,
++                low / c,
++            ],
++            strict=True,
++        )
++    )
++    ratio = c / c.shift()
++    variation = abs(ratio - 1) * v
++    # Qlib gives the independent variable its absolute trading-day offset even when some quotes are missing.
++    for w in WINDOWS:
++
++        def roll(s, window=w):
++            return s.rolling(window, min_periods=1)
++
++        def corr(left, right):
++            r = roll(left).corr(right)
++            return r.mask(np.isclose(roll(left).std(), 0, atol=2e-5) | np.isclose(roll(right).std(), 0, atol=2e-5))
++
++        rc = roll(c)
++        rh = roll(h)
++        rl = roll(low)
++        rv = roll(v)
++        # A small rolling window around zero avoids subtracting two large absolute trading-date values.
++        cy = np.lib.stride_tricks.sliding_window_view(
++            np.pad(c.to_numpy(dtype="float64"), (w - 1, 0), constant_values=np.nan), w
++        )
++        xx = np.arange(w, dtype=float)[None, :]
++        mask = np.isfinite(cy)
++        n = mask.sum(axis=1)
++        mx = (mask * xx).sum(axis=1) / np.maximum(n, 1)
++        my = np.nansum(cy, axis=1) / np.maximum(n, 1)
++        dx = xx - mx[:, None]
++        dy = cy - my[:, None]
++        xy = np.nansum(dx * dy, axis=1)
++        vx = (mask * dx**2).sum(axis=1)
++        vy = np.nansum(dy**2, axis=1)
++        with np.errstate(divide="ignore", invalid="ignore"):
++            slope = xy / vx
++            rsq = xy**2 / (vx * vy)
++        hi = rh.max()
++        lo = rl.min()
++        imax = rh.apply(lambda a: a.argmax() + 1, raw=True)
++        imin = rl.apply(lambda a: a.argmin() + 1, raw=True)
++        up = roll((c > c.shift()).astype(float)).mean()
++        down = roll((c < c.shift()).astype(float)).mean()
++
++        def sums(s):
++            change = s - s.shift()
++            den = roll(abs(change)).sum() + eps
++            a = roll(np.maximum(change, 0)).sum()
++            b = roll(np.maximum(-change, 0)).sum()
++            return a / den, b / den, (a - b) / den
++
++        sp, sn, sd = sums(c)
++        vp, vn, vd = sums(v)
++        vals = (
++            c.shift(w) / c,
++            rc.mean() / c,
++            rc.std() / c,
++            slope / c,
++            pd.Series(rsq, index=c.index).mask(np.isclose(rc.std(), 0, atol=2e-5)),
++            (c - my - slope * (w - 1 - mx)) / c,
++            hi / c,
++            lo / c,
++            rc.quantile(0.8) / c,
++            rc.quantile(0.2) / c,
++            rc.rank(pct=True),
++            (c - lo) / (hi - lo + eps),
++            imax / w,
++            imin / w,
++            (imax - imin) / w,
++            corr(c, np.log(v + 1)),
++            corr(ratio, np.log(v / v.shift() + 1)),
++            up,
++            down,
++            up - down,
++            sp,
++            sn,
++            sd,
++            rv.mean() / (v + eps),
++            rv.std() / (v + eps),
++            roll(variation).std() / (roll(variation).mean() + eps),
++            vp,
++            vn,
++            vd,
++        )
++        out.update({name + str(w): val for name, val in zip(FAMILIES, vals, strict=True)})
++    return pd.DataFrame(out, index=frame.index)[ORDER].astype("float32")
+diff --git a/packages/timenet-connectors/src/timenet_connectors/datasets/10eit/drift_alpha158_flow/connector.py b/packages/timenet-connectors/src/timenet_connectors/datasets/10eit/drift_alpha158_flow/connector.py
+new file mode 100644
+index 0000000..b9fd8aa
+--- /dev/null
++++ b/packages/timenet-connectors/src/timenet_connectors/datasets/10eit/drift_alpha158_flow/connector.py
+@@ -0,0 +1,158 @@
++"""Build 20-session Alpha158 records from an authorized OHLCV and DRIFT task release."""
++
++import asyncio
++from collections import defaultdict
++import hashlib
++from importlib import import_module
++import json
++import os
++from pathlib import Path
++
++import numpy as np
++import pandas as pd
++
++from timenet.connectors import BaseConnector
++from timenet.dataset import OrdinalAxis, Record, Signal, Source, TimeFDataset
++from timenet.types import Annotation, AnswerTask, Split, TimeSeriesSpec, ureg
++from timenet_connectors.download import Artifact, download_files
++
++
++alpha158 = import_module(".alpha158", __package__)
++ORDER = alpha158.ORDER
++compute_alpha158_ohlcv = alpha158.compute_alpha158_ohlcv
++
++
++CORE = ("KMID", "KLEN", "ROC5", "STD5", "WVMA5")
++SPLITS = {"train": Split.TRAIN, "valid": Split.VALIDATION, "test": Split.TEST}
++FACTOR = TimeSeriesSpec(
++    spec_type="alpha158_factor",
++    name="Alpha158 factor",
++    dtype="float32",
++    unit_value=ureg.dimensionless,
++)
++RET = TimeSeriesSpec(
++    spec_type="daily_return",
++    name="Daily close-to-close return",
++    dtype="float32",
++    unit_value=ureg.dimensionless,
++)
++
++
++class DriftAlpha158Flow(BaseConnector[Path]):
++    """Create point-in-time stock records from the original research provider."""
++
++    @staticmethod
++    def download(cache_dir):
++        """Locate or download the pinned OHLCV and task bundle."""
++        location = os.environ.get("DRIFT_ALPHA158_BUNDLE")
++        if location:
++            path = Path(location)
++        else:
++            url = os.environ.get("DRIFT_ALPHA158_BUNDLE_URL", "").rstrip("/")
++            if not url.startswith("https://"):
++                raise FileNotFoundError(
++                    "Set DRIFT_ALPHA158_BUNDLE or an authorized HTTPS DRIFT_ALPHA158_BUNDLE_URL. For an anonymous build use 10eit/drift-alpha158-flow-public."
++                )
++            expected = json.loads(Path(__file__).with_name("source_hashes.json").read_text())
++            path = Path(cache_dir) / "pinned-bundle"
++            path.mkdir(parents=True, exist_ok=True)
++            asyncio.run(
++                download_files(
++                    [Artifact(url=f"{url}/{name}", dest=path / name, sha256=pin) for name, pin in expected.items()]
++                )
++            )
++        if not all((path / k).is_file() for k in ("observations.json", "ohlcv.npz")):
++            raise FileNotFoundError(path)
++        return path
++
++    def convert(self, source):
++        """Build the dataset after validating both source files."""
++        expected = json.loads(Path(__file__).with_name("source_hashes.json").read_text())
++        for name, want in expected.items():
++            with (source / name).open("rb") as f:
++                if hashlib.file_digest(f, "sha256").hexdigest() != want:
++                    raise ValueError(f"Unexpected source revision: {name}")
++        records = json.loads((source / "observations.json").read_text())
++        with np.load(source / "ohlcv.npz", allow_pickle=False) as f:
++            dates = f["dates"].tolist()
++            tickers = f["tickers"].tolist()
++            cols = f["columns"].tolist()
++            bars = f["values"]
++        return self.build_records(
++            records,
++            dates,
++            lambda name: pd.DataFrame(bars[tickers.index(name)], columns=cols, index=dates),
++        )
++
++    def build_records(self, records, dates, read_frame, source_annotations=None):  # ruff: ignore[too-many-locals] -- construct all signals before registering related tasks
++        """Assemble dated signals and annotations for both price providers."""
++        jobs = defaultdict(list)
++        for ix, r in enumerate(records):
++            for name in dict.fromkeys([r["target"], *r["senders"], r["other"]]):
++                jobs[name].append((ix, name in {r["target"], r["other"]}))
++        ts = [{} for _ in records]
++        for name, jobs_for_stock in jobs.items():
++            ends = [dates.index(records[ix]["date"]) + 1 for ix, _ in jobs_for_stock]
++            start = max(0, min(ends) - 81)
++            end = max(ends)
++            frame = read_frame(name).reindex(dates[start:end])
++            factors = compute_alpha158_ohlcv(frame)
++            close = frame.close.to_numpy(dtype="float64")
++            with np.errstate(divide="ignore", invalid="ignore"):
++                returns = np.r_[np.nan, close[1:] / close[:-1] - 1].astype("float32")
++            for (ix, full), stop in zip(jobs_for_stock, ends, strict=True):
++                sl = slice(stop - start - 20, stop - start)
++                names = ORDER if full else CORE
++                if list(frame.index[sl]) != records[ix]["dates"]:
++                    raise ValueError("Misaligned factor window")
++                sig = [
++                    Signal.from_values(
++                        returns[sl],
++                        name="daily_return",
++                        spec=RET,
++                        time_axis=OrdinalAxis(),
++                    )
++                ]
++                for k in names:
++                    sig.append(
++                        Signal.from_values(
++                            factors[k].to_numpy()[sl],
++                            name=k,
++                            spec=FACTOR,
++                            time_axis=OrdinalAxis(),
++                        )
++                    )
++                ts[ix][name] = Source(name, signals=sig)
++        dataset = TimeFDataset(metadata=self.metadata())
++        for r, stocks in zip(records, ts, strict=True):
++            ann = dict(
++                sample_id=r["date"] + "|" + r["target"],
++                date=r["date"],
++                target_ticker=r["target"],
++                sector=r["sector"],
++                sender_tickers=json.dumps(r["senders"]),
++                pair_ticker=r["other"],
++                trading_dates=json.dumps(r["dates"]),
++                factor_order=json.dumps(ORDER),
++                backbone_id="drift-sp500-alpha158-seed0",
++                **(source_annotations or {}),
++            )
++            sources = [stocks[k] for k in dict.fromkeys([r["target"], *r["senders"], r["other"]])]
++            record = Record(
++                sources=sources,
++                annotations=[Annotation(k, value=v) for k, v in ann.items()],
++            )
++            dataset.add_record(record)
++            for task in r["tasks"]:
++                dataset.add_task(
++                    AnswerTask(
++                        inputs=(record,),
++                        prompt=task["prompt"],
++                        targets=task["target"],
++                        split=SPLITS[r["split"]],
++                    )
++                )
++        return dataset
++
++
++CONNECTOR = DriftAlpha158Flow
+diff --git a/packages/timenet-connectors/src/timenet_connectors/datasets/10eit/drift_alpha158_flow/dataset.yaml b/packages/timenet-connectors/src/timenet_connectors/datasets/10eit/drift_alpha158_flow/dataset.yaml
+new file mode 100644
+index 0000000..3ee83d4
+--- /dev/null
++++ b/packages/timenet-connectors/src/timenet_connectors/datasets/10eit/drift_alpha158_flow/dataset.yaml
+@@ -0,0 +1,14 @@
++yaml_schema_version: 1
++dataset_id: 10eit/drift-alpha158-flow
++dataset_version: 1.0.0
++name: DRIFT Alpha158 directed stock flows
++description: >-
++  Twenty-session multivariate stock windows across eleven sectors, with 157 named Alpha158-US
++  factors on each target and comparison stock, five upstream stocks, daily returns and four
++  structured financial tasks. Historical splits cover 2018–2022, 2023 and 2024–2025.
++license: NONE
++source_url: https://github.com/jiajhe/DRIFT
++access: restricted
++access_url: https://github.com/jiajhe/DRIFT
++domains: [finance]
++tags: [equities, multivariate, financial-forecasting, question-answering]
+diff --git a/packages/timenet-connectors/src/timenet_connectors/datasets/10eit/drift_alpha158_flow/requirements.txt b/packages/timenet-connectors/src/timenet_connectors/datasets/10eit/drift_alpha158_flow/requirements.txt
+new file mode 100644
+index 0000000..9eac703
+--- /dev/null
++++ b/packages/timenet-connectors/src/timenet_connectors/datasets/10eit/drift_alpha158_flow/requirements.txt
+@@ -0,0 +1,3 @@
++numpy==2.5.5; python_version >= "3.12"
++numpy==2.2.6; python_version < "3.12"
++pandas==2.3.3
+diff --git a/packages/timenet-connectors/src/timenet_connectors/datasets/10eit/drift_alpha158_flow/source_hashes.json b/packages/timenet-connectors/src/timenet_connectors/datasets/10eit/drift_alpha158_flow/source_hashes.json
+new file mode 100644
+index 0000000..6cd6320
+--- /dev/null
++++ b/packages/timenet-connectors/src/timenet_connectors/datasets/10eit/drift_alpha158_flow/source_hashes.json
+@@ -0,0 +1,4 @@
++{
++  "observations.json": "3164212d0772a4ac26f677839dc584bbb4a5b62dc5571f9d66d7dcc5e7533ad7",
++  "ohlcv.npz": "15aacdff2aef6d4b76568a2977e8ca14884d649d9a4c5024d28a915d4a8a23fa"
++}
+diff --git a/packages/timenet-connectors/src/timenet_connectors/datasets/10eit/drift_alpha158_flow/tests/test_alpha158.py b/packages/timenet-connectors/src/timenet_connectors/datasets/10eit/drift_alpha158_flow/tests/test_alpha158.py
+new file mode 100644
+index 0000000..dc32fd6
+--- /dev/null
++++ b/packages/timenet-connectors/src/timenet_connectors/datasets/10eit/drift_alpha158_flow/tests/test_alpha158.py
+@@ -0,0 +1,35 @@
++"""Check the public column contract and prefix invariance on permitted source data."""
++
++from importlib import import_module
++import os
++from pathlib import Path
++
++import numpy as np
++import pandas as pd
++import pytest
++
++
++module = import_module("timenet_connectors.datasets.10eit.drift_alpha158_flow.alpha158")
++
++
++def test_column_contract():
++    assert len(module.ORDER) == len(set(module.ORDER)) == 157
++    assert module.ORDER[:3] == ["KMID", "KLEN", "KMID2"]
++    assert "VWAP0" not in module.ORDER
++
++
++def test_actual_ohlcv_prefix():
++    path = os.environ.get("DRIFT_ALPHA158_BUNDLE")
++    if not path:
++        pytest.skip("requires authorized OHLCV source")
++    with np.load(Path(path) / "ohlcv.npz", allow_pickle=False) as f:
++        calendar = f["dates"].tolist()
++        i = calendar.index("2023-01-03")
++        frame = pd.DataFrame(
++            f["values"][f["tickers"].tolist().index("AAPL"), i - 90 : i + 10],
++            columns=f["columns"].tolist(),
++            index=calendar[i - 90 : i + 10],
++        )
++    original = module.compute_alpha158_ohlcv(frame)
++    cut = module.compute_alpha158_ohlcv(frame.iloc[:-9])
++    pd.testing.assert_frame_equal(cut, original.iloc[:-9])
+diff --git a/packages/timenet-connectors/src/timenet_connectors/datasets/10eit/drift_alpha158_flow_public/README.md b/packages/timenet-connectors/src/timenet_connectors/datasets/10eit/drift_alpha158_flow_public/README.md
+new file mode 100644
+index 0000000..a587ee9
+--- /dev/null
++++ b/packages/timenet-connectors/src/timenet_connectors/datasets/10eit/drift_alpha158_flow_public/README.md
+@@ -0,0 +1,7 @@
++# Public DRIFT Alpha158 replay
++
++Run `timenet-build build 10eit/drift-alpha158-flow-public --local-registry .timenet-registry`. The default isolated build installs the pinned NumPy and pandas dependencies. We verified the full release on Python 3.12 with NumPy 2.5.5 and pandas 2.3.3. The connector fetches Kaggle's fixed S&P 500 daily OHLCV archive (version 613, 266 MB) with anonymous HTTPS and verifies its SHA-256. For offline use, place that same archive under `$DRIFT_ALPHA158_BUNDLE/sp500-kaggle-v613.zip`.
++
++The 98 observations cover all 30 core companies and 11 sectors. Each has a 20-session target, five upstream stocks, a comparison stock and four tasks. There are 156 training, 68 validation and 168 test tasks. Signals come from the public price archive. Structural supervision describes the original frozen DRIFT replay. For every retained observation all seven stocks have matching dated daily returns within 0.00001 of that replay, and the pair winner agrees on independently priced next-close to following-close returns. The other 142 archive records are outside this matched cohort. The factor-level error reported for the original 240 records applies to the separate research-provider release.
++
++The input price archive is listed by its uploader under CC0. No price archive is embedded in this connector. The included observation index contains identifiers, dates and task annotations. The release-wide license is unspecified. [Source snapshot](https://www.kaggle.com/datasets/joebeachcapital/s-and-p500-index-stocks-daily-updated/versions/613)
+diff --git a/packages/timenet-connectors/src/timenet_connectors/datasets/10eit/drift_alpha158_flow_public/__init__.py b/packages/timenet-connectors/src/timenet_connectors/datasets/10eit/drift_alpha158_flow_public/__init__.py
+new file mode 100644
+index 0000000..c034353
+--- /dev/null
++++ b/packages/timenet-connectors/src/timenet_connectors/datasets/10eit/drift_alpha158_flow_public/__init__.py
+@@ -0,0 +1,7 @@
++"""Build the publicly reproducible DRIFT stock-flow replay."""
++
++from importlib import import_module
++
++
++# The organization ID begins with a digit, so static import resolution cannot represent its path.
++CONNECTOR = import_module(".connector", __name__).CONNECTOR  # ruff: ignore[non-empty-init-module]
+diff --git a/packages/timenet-connectors/src/timenet_connectors/datasets/10eit/drift_alpha158_flow_public/connector.py b/packages/timenet-connectors/src/timenet_connectors/datasets/10eit/drift_alpha158_flow_public/connector.py
+new file mode 100644
+index 0000000..c2b2a88
+--- /dev/null
++++ b/packages/timenet-connectors/src/timenet_connectors/datasets/10eit/drift_alpha158_flow_public/connector.py
+@@ -0,0 +1,68 @@
++"""Immutable public OHLCV signals with date-aligned historical DRIFT annotations."""
++
++import asyncio
++import gzip
++import hashlib
++from importlib import import_module
++from io import BytesIO
++import json
++import os
++from pathlib import Path
++import zipfile
++
++import numpy as np
++import pandas as pd
++
++from timenet_connectors.download import Artifact, download_files
++
++
++DriftAlpha158Flow = import_module("timenet_connectors.datasets.10eit.drift_alpha158_flow.connector").DriftAlpha158Flow
++
++URL = "https://www.kaggle.com/api/v1/datasets/download/joebeachcapital/s-and-p500-index-stocks-daily-updated?dataset_version_number=613"
++SHA = "1400038a83f5ba2702adf059829d4e1d2be0f977170fea5455e10bbd22b2c9a2"
++NAME = "sp500-kaggle-v613.zip"
++
++
++def public_frame(archive, ticker):
++    """Read split- and dividend-adjusted bars in the provider's date order."""
++    with archive.open(f"sp500_cache/{ticker}.csv") as stream:
++        raw = pd.read_csv(BytesIO(stream.read()))
++    raw = raw.drop_duplicates("Date", keep="last").set_index("Date").sort_index()
++    ratio = raw["Adj Close"] / raw["Close"]
++    out = raw[["Open", "High", "Low", "Close"]].mul(ratio, axis=0)
++    out.columns = ["open", "high", "low", "close"]
++    out["volume"] = raw["Volume"] / ratio
++    return out.replace([np.inf, -np.inf], np.nan).astype("float32")
++
++
++class PublicAlpha158Flow(DriftAlpha158Flow):
++    """Reconstruct the price-matched public subset from its pinned archive."""
++
++    @staticmethod
++    def download(cache_dir):
++        """Acquire and verify the same price snapshot in online and offline modes."""
++        local = os.environ.get("DRIFT_ALPHA158_BUNDLE")
++        path = Path(local) / NAME if local else Path(cache_dir) / NAME
++        if not local:
++            path.parent.mkdir(parents=True, exist_ok=True)
++            asyncio.run(download_files([Artifact(url=URL, dest=path, sha256=SHA)]))
++        with path.open("rb") as stream:
++            if hashlib.file_digest(stream, "sha256").hexdigest() != SHA:
++                raise ValueError("Unexpected public OHLCV revision")
++        return path
++
++    def convert(self, source):
++        """Compute factors and attach the released DRIFT task annotations."""
++        with gzip.open(Path(__file__).with_name("observation_index.json.gz"), "rt") as f:
++            records = json.load(f)
++        with zipfile.ZipFile(source) as archive:
++            calendar = public_frame(archive, "AAPL").index.tolist()
++            return self.build_records(
++                records,
++                calendar,
++                lambda name: public_frame(archive, name),
++                {"price_source": "Kaggle joebeachcapital v613", "label_source": "frozen DRIFT history-v3"},
++            )
++
++
++CONNECTOR = PublicAlpha158Flow
+diff --git a/packages/timenet-connectors/src/timenet_connectors/datasets/10eit/drift_alpha158_flow_public/dataset.yaml b/packages/timenet-connectors/src/timenet_connectors/datasets/10eit/drift_alpha158_flow_public/dataset.yaml
+new file mode 100644
+index 0000000..fe21f64
+--- /dev/null
++++ b/packages/timenet-connectors/src/timenet_connectors/datasets/10eit/drift_alpha158_flow_public/dataset.yaml
+@@ -0,0 +1,14 @@
++yaml_schema_version: 1
++dataset_id: 10eit/drift-alpha158-flow-public
++dataset_version: 1.0.0
++name: DRIFT Alpha158 public market replay
++description: >
++  Rebuild historical stock-factor windows directly from a fixed public OHLCV snapshot.
++  The 98 matched observations cover 30 target companies in 11 sectors. Each record has
++  four dated tasks, with categorical supervision from the archived DRIFT model and a
++  pairwise realized-return winner confirmed against the independent price source.
++license: NONE
++source_url: https://www.kaggle.com/datasets/joebeachcapital/s-and-p500-index-stocks-daily-updated/versions/613
++access: open
++domains: [finance]
++tags: [equities, multivariate, question-answering, financial-forecasting]
+diff --git a/packages/timenet-connectors/src/timenet_connectors/datasets/10eit/drift_alpha158_flow_public/observation_index.json.gz b/packages/timenet-connectors/src/timenet_connectors/datasets/10eit/drift_alpha158_flow_public/observation_index.json.gz
+new file mode 100644
+index 0000000000000000000000000000000000000000..331434e50f6843f6f996241e0a30f3e1f28376ed
+GIT binary patch
+literal 17876
+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
+Q;q%Y`57@4ONeiC@04k?;4gdfE
+
+literal 0
+HcmV?d00001
+
+diff --git a/packages/timenet-connectors/src/timenet_connectors/datasets/10eit/drift_alpha158_flow_public/requirements.txt b/packages/timenet-connectors/src/timenet_connectors/datasets/10eit/drift_alpha158_flow_public/requirements.txt
+new file mode 100644
+index 0000000..9eac703
+--- /dev/null
++++ b/packages/timenet-connectors/src/timenet_connectors/datasets/10eit/drift_alpha158_flow_public/requirements.txt
+@@ -0,0 +1,3 @@
++numpy==2.5.5; python_version >= "3.12"
++numpy==2.2.6; python_version < "3.12"
++pandas==2.3.3
+diff --git a/packages/timenet-connectors/src/timenet_connectors/datasets/10eit/drift_alpha158_flow_public/tests/test_public_replay.py b/packages/timenet-connectors/src/timenet_connectors/datasets/10eit/drift_alpha158_flow_public/tests/test_public_replay.py
+new file mode 100644
+index 0000000..8be1c0c
+--- /dev/null
++++ b/packages/timenet-connectors/src/timenet_connectors/datasets/10eit/drift_alpha158_flow_public/tests/test_public_replay.py
+@@ -0,0 +1,45 @@
++"""Check released observation keys and public-provider point-in-time factor construction."""
++
++from collections import Counter
++import gzip
++from importlib import import_module
++import json
++import os
++from pathlib import Path
++import zipfile
++
++import pandas as pd
++import pytest
++
++
++public = import_module("timenet_connectors.datasets.10eit.drift_alpha158_flow_public.connector")
++factors = import_module("timenet_connectors.datasets.10eit.drift_alpha158_flow.alpha158")
++
++
++def test_release_index():
++    assert public.__file__ is not None
++    p = Path(public.__file__).with_name("observation_index.json.gz")
++    with gzip.open(p, "rt") as f:
++        records = json.load(f)
++    assert len({(r["date"], r["target"]) for r in records}) == 98
++    assert len({r["target"] for r in records}) == 30
++    assert Counter(r["split"] for r in records) == {
++        "train": 39,
++        "valid": 17,
++        "test": 42,
++    }
++    for r in records:
++        assert r["date"] == r["dates"][-1] and len(r["dates"]) == 20
++        assert len(r["senders"]) == 5 and len(r["tasks"]) == 4
++
++
++def test_factor_prefix_on_actual_public_bars():
++    bundle = os.environ.get("DRIFT_ALPHA158_BUNDLE")
++    if not bundle:
++        pytest.skip("Requires the pinned public OHLCV ZIP")
++    with zipfile.ZipFile(Path(bundle) / public.NAME) as archive:
++        frame = public.public_frame(archive, "AAPL").loc["2023-01-01":"2023-06-30"]
++    end = "2023-06-01"
++    expected = factors.compute_alpha158_ohlcv(frame).loc[:end]
++    actual = factors.compute_alpha158_ohlcv(frame.loc[:end])
++    pd.testing.assert_frame_equal(expected, actual)

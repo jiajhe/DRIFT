@@ -1,0 +1,7 @@
+*.md text diff merge eol=lf
+*.yaml text diff merge eol=lf
+*.json text diff merge eol=lf
+*.jsonl text diff merge eol=lf
+*.py text diff merge eol=lf
+.gitignore text diff merge eol=lf
+.gitattributes text diff merge eol=lf
