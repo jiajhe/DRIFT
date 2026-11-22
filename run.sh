@@ -24,10 +24,13 @@ if [[ "${1:-verify}" == "verify" ]]; then
 elif [[ "$1" == "load" ]]; then
   shift
   exec "$PY" "$ROOT/code/load_checkpoint.py" "$@"
+elif [[ "$1" == "ensemble" ]]; then
+  shift
+  exec "$PY" "$ROOT/code/paper_ensemble.py" "$@"
 elif [[ "$1" == "python" ]]; then
   shift
   exec "$PY" "$@"
 else
-  printf '%s\n' 'Usage: ./run.sh verify | load --cell alpha158_csi300 | python <script> [args]'
+  printf '%s\n' 'Usage: ./run.sh verify | load --cell alpha158_csi300 | ensemble --help | python <script> [args]'
   exit 2
 fi

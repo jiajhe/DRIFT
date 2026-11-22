@@ -188,14 +188,27 @@
     }
   ],
   "file_sha256": {
-    ".gitattributes": "a01dc3b740f45ecf9e80c885a2275467b92c7a453ddcdfa5124fdd4bd9446b8c",
+    ".gitattributes": "c109aadae33a4bf7e054ed281323bb7f74cca3dc599efb52a1bfc3d95788dec4",
     ".gitignore": "9833b34a46ac11fca6f12ab28c05bb699b5d2004d439f7062ca4dd08dad139bd",
-    "README.md": "042838d9b23bafc9a618ce947243419c5988b9c42613b83760a8c2dc3ec933bf",
+    "README.md": "6c0a6b1b3825ffb8f5dffc17f7cefbfe3bbb2ee21586ccef186906b74b03c048",
     "checkpoints/alpha158_csi300.pt": "4d7018d7c155286249bf4c2bccdd105037463c210caa9a61e856699b2839c5ad",
     "checkpoints/alpha158_csi500.pt": "16a53112066525306bf5eca9d6c6caf5baacdacc6e98746516143acdc1bc8f6c",
     "checkpoints/alpha158us_sp500_pit.pt": "bebb0b1bddc660de0f3ba113f8bfd659adbff5cb5b4d3a30a093726043414c5d",
     "checkpoints/alpha360_csi300.pt": "3bcfac4072f25d7029e3379ae36477a7346a8742b33f7136c1eb6e237707a6cd",
     "checkpoints/alpha360_csi500.pt": "ba40777a5c293d02a4fee29644261268356579081f1b1da5ff61967d5dae39a1",
+    "checkpoints/paper_ensemble/alpha158_csi300/seed-0.pt": "a4114c603bc76e8e1b5dc10ddb367e4dd29439c00b5237123a5d173994eef4cd",
+    "checkpoints/paper_ensemble/alpha158_csi300/seed-2.pt": "914b11fb03e75aa5a1bef96a6366394c0b336cc8bb5460de34144665c6d5c3df",
+    "checkpoints/paper_ensemble/alpha158_csi300/seed-5.pt": "ec316e3d575034191fd9d91c153afd1015a93a45c44c8f99a0a47f4b13bfa8fb",
+    "checkpoints/paper_ensemble/alpha158_csi300/seed-9.pt": "e0acd0877b440d541ddb9801b7101333a1644d4609c496cd99cce1913c55fc59",
+    "checkpoints/paper_ensemble/alpha158us_sp500_pit/seed-0.pt": "6a822882badb4ed058b76d2e137f708a0da07310f66cd5fe58fb415764215886",
+    "checkpoints/paper_ensemble/alpha158us_sp500_pit/seed-2.pt": "194f9764148fe07bf9c13c4715e6beefa56c2f11fbace12467f367f8fde92fa0",
+    "checkpoints/paper_ensemble/alpha158us_sp500_pit/seed-5.pt": "2e62b55301bf3e7621f0a2d67a7ece60d8e74b4fd1eda6cc0f4b7ac640965aba",
+    "checkpoints/paper_ensemble/alpha158us_sp500_pit/seed-9.pt": "9b9fd412e7424c8e33d9f3ea7627bcd4cd9af39f883cf683241ebc5e8ace7eb9",
+    "checkpoints/paper_ensemble/alpha360_csi300/seed-0.pt": "3260a276b6f32e94b876b6b590d400360555da4b1bb9ef1d82ccad9b45b424d5",
+    "checkpoints/paper_ensemble/alpha360_csi300/seed-2.pt": "2a97a9dd4d09036b0152e64426e157100017455bda7a6003997e13b252557c17",
+    "checkpoints/paper_ensemble/alpha360_csi300/seed-5.pt": "ab7da0ca909ebc899bbf510b297292e6ce0b59b834ffc7fcfc98eb714df53ed1",
+    "checkpoints/paper_ensemble/alpha360_csi300/seed-9.pt": "947befbb80df3e8f8c64089d95023eceba0134942fe42e1fbe46b8666f132183",
+    "checkpoints/paper_ensemble/manifest.json": "4e3773f95a7f52d091aeedc81cefe799cdac3a0f7685b664a1ed30aa34fd4f2a",
     "code/ENVIRONMENT.json": "29220312da50c4d0343ab639327c5cae39b6df690690719b2bd0c59cf4275f68",
     "code/configs/alpha158_csi300/metrics_test_summary.json": "81c56f10901e80506e216ace355b9c1530c86d456b61fdd7ee24480618e33839",
     "code/configs/alpha158_csi300/metrics_valid_summary.json": "6bc1693ef764afd08cb255672cef59d615e88872c521cf7b9bb9d58323641a76",
@@ -218,6 +231,7 @@
     "code/configs/alpha360_csi500/model.json": "a67f1ecc7d4ef115d79390d42633bb9fcd6e1dd9ea5d0c48a2c6840b101de0cf",
     "code/configs/alpha360_csi500/runtime.json": "77a306ea6b1264f28132344d6a7043d692652692c6d41dfe5304b52e2214df1b",
     "code/load_checkpoint.py": "734397de0baa377cacfc14ae86ea9d89f3a216d14810af2f5ceb5b6c0305373f",
+    "code/paper_ensemble.py": "45c234e16a9d4d9a67ab5964e8a65bf9a394f9b53fc2c0a66c5217087b111a4e",
     "code/requirements.txt": "98ef66e6dd346c7e2769255fc20aebece1215ae0ce1e016b4623dea6a52f949e",
     "code/scripts/materialize_compact_qlib.py": "6124009d8fe41251d21753b9b13a7eff58be5f1c7efce5bc926ee586421d39ef",
     "code/scripts/run_flow_fdg.py": "e70c79e2ea9939776617e995b321f9506373216bd4bb89f095d1f0ff54e81d14",
@@ -255,6 +269,7 @@
     "data/cn_daily_release_20260712/SOURCE_MANIFEST.json": "d5660dfbbb0bd19fc72e36aa91b973e9beb7bd2a7dc7886607cb6517b86ca130",
     "data/us_yahoo_sp500_pit_ohlcv_20260723/US_DATA_READINESS_REPORT.json": "63b885c353049c24b0272b1bb03a547a52fe0aa8600b1facc4245f1c867a3a86",
     "data/us_yahoo_sp500_pit_ohlcv_20260723/release_manifest.json": "42800a3d0823d0e2e77ea01717228210e45cabd12ebdb9ff44de9bada68990a7",
-    "run.sh": "337caa499c21c101831a1a648f64517078f9ec38c925fe5e2a44fe14a60028af"
-  }
+    "run.sh": "c75eca631cf22339138e37a0466aba09c72191d6387768b6aaf24e7c4c28e479"
+  },
+  "paper_ensemble": "checkpoints/paper_ensemble/manifest.json"
 }
