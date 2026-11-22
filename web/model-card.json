@@ -1,0 +1,820 @@
+{
+  "heading": "Paper stock-ranking benchmarks",
+  "context": "DRIFT Table 1. Daily cross-sectional IC and RankIC, alongside portfolio performance.",
+  "tables": [
+    {
+      "market": "S&P 500 · Alpha158",
+      "rows": [
+        [
+          "LightGBM",
+          "0.0060",
+          "0.0058",
+          "38.36%"
+        ],
+        [
+          "LSTM",
+          "0.0066",
+          "0.0098",
+          "48.01%"
+        ],
+        [
+          "TRA",
+          "0.0066",
+          "0.0100",
+          "46.45%"
+        ],
+        [
+          "HIST",
+          "0.0042",
+          "0.0078",
+          "40.69%"
+        ],
+        [
+          "MASTER",
+          "0.0075",
+          "0.0088",
+          "38.29%"
+        ],
+        [
+          "DRIFT",
+          "0.0163",
+          "0.0180",
+          "52.86%"
+        ]
+      ]
+    },
+    {
+      "market": "CSI 300 · Alpha158",
+      "rows": [
+        [
+          "LightGBM",
+          "0.0188",
+          "0.0204",
+          "61.45%"
+        ],
+        [
+          "LSTM",
+          "0.0248",
+          "0.0532",
+          "55.83%"
+        ],
+        [
+          "TRA",
+          "0.0245",
+          "0.0482",
+          "62.31%"
+        ],
+        [
+          "HIST",
+          "0.0261",
+          "0.0556",
+          "65.88%"
+        ],
+        [
+          "MASTER",
+          "0.0252",
+          "0.0410",
+          "50.16%"
+        ],
+        [
+          "DRIFT",
+          "0.0290",
+          "0.0553",
+          "69.18%"
+        ]
+      ]
+    },
+    {
+      "market": "CSI 300 · Alpha360",
+      "rows": [
+        [
+          "LightGBM",
+          "0.0195",
+          "0.0146",
+          "77.41%"
+        ],
+        [
+          "LSTM",
+          "0.0239",
+          "0.0484",
+          "55.77%"
+        ],
+        [
+          "TRA",
+          "0.0229",
+          "0.0504",
+          "59.91%"
+        ],
+        [
+          "HIST",
+          "0.0258",
+          "0.0518",
+          "66.76%"
+        ],
+        [
+          "MASTER",
+          "0.0237",
+          "0.0304",
+          "66.52%"
+        ],
+        [
+          "DRIFT",
+          "0.0273",
+          "0.0482",
+          "87.49%"
+        ]
+      ]
+    }
+  ],
+  "notes": "Return is cumulative gross return on the daily-rebalanced equally weighted top quintile at zero transaction cost. DRIFT uses its four paper seeds.",
+  "evaluation": {
+    "model_revision": "v2.1",
+    "checkpoint_sha256": "9a8bb744b1de13ad87b40290dda07a42d2ade607253acfc08e4646256423715b",
+    "protocol": {
+      "training_steps": {
+        "alignment": 750,
+        "joint": 5000
+      },
+      "forecast_target": "close(t+2) / close(t+1) - 1",
+      "component_normalization": "train-only, separate mean and scale for each [3,18] slot",
+      "local_width": 72,
+      "answer_token_weight": 3.0,
+      "pairwise_readout": "BF16 next-token logits at the winner field; equal logits count as half a win",
+      "baseline_joint_steps": 3000,
+      "stats_sha256": "321de83eabd7478bf9cb392cb6584dd344b9b9673690a74b9465c352b9024ba7",
+      "task_sha256": {
+        "train": "fe0d04489f3f9c7ee07ea13e2a82490a35f9e71f67c5cbcd65a481c4f5b71744",
+        "valid": "c28df2dcf65f2bf101a6e50ae81b5aba3e162ef47e935ee6ab4efa97f67a7652",
+        "test": "82949c5473037cbbeeb6205de04fb17e83628cf97bb5a094583068ec1cea0bbc",
+        "test_random_pairs": "a9b0f62e796b8178e7da9e3a08fdaaddf4f2efe6e5d4cb37bbee572b910c6769"
+      },
+      "validation_selection": "highest 2023 four-task mean exact accuracy; predeclared steps",
+      "test_reuse": "same 2024–2025 questions previously reported for v2"
+    },
+    "pairwise_scores": {
+      "test": {
+        "native": {
+          "n": 1000,
+          "correct": 498,
+          "ties": 0,
+          "win_rate": 0.498,
+          "auc": 0.501632
+        },
+        "logits": {
+          "n": 1000,
+          "correct": 466,
+          "ties": 61,
+          "win_rate": 0.4965,
+          "auc": 0.50361
+        },
+        "missing_reasoning": 0
+      },
+      "test_random_pairs": {
+        "native": {
+          "n": 1000,
+          "correct": 531,
+          "ties": 0,
+          "win_rate": 0.531,
+          "auc": 0.528832
+        },
+        "logits": {
+          "n": 1000,
+          "correct": 491,
+          "ties": 79,
+          "win_rate": 0.5305,
+          "auc": 0.52527
+        },
+        "missing_reasoning": 0
+      }
+    },
+    "previous_v2": {
+      "real": {
+        "ATTRIBUTION_COT": {
+          "n": 1000,
+          "exact": 129,
+          "format": 1000,
+          "fields": {
+            "driver": 865,
+            "flow_mode": 407,
+            "top_sender": 390
+          },
+          "accuracy": 0.129
+        },
+        "COUNTERFACTUAL_COT": {
+          "n": 1000,
+          "exact": 796,
+          "format": 1000,
+          "fields": {
+            "queried_sender": 1000,
+            "score_shift": 899,
+            "sensitivity": 796
+          },
+          "accuracy": 0.796
+        },
+        "REGIME_ROLE_COT": {
+          "n": 1000,
+          "exact": 321,
+          "format": 1000,
+          "fields": {
+            "net_role": 939,
+            "role_stability": 623,
+            "market_regime": 563
+          },
+          "accuracy": 0.321
+        },
+        "PAIRWISE_FORECAST_COT": {
+          "n": 1000,
+          "exact": 313,
+          "format": 1000,
+          "fields": {
+            "winner": 500,
+            "confidence": 637
+          },
+          "accuracy": 0.313
+        }
+      },
+      "shuffled": {
+        "ATTRIBUTION_COT": {
+          "n": 1000,
+          "exact": 22,
+          "format": 1000,
+          "fields": {
+            "driver": 322,
+            "flow_mode": 330,
+            "top_sender": 241
+          },
+          "accuracy": 0.022
+        },
+        "COUNTERFACTUAL_COT": {
+          "n": 1000,
+          "exact": 219,
+          "format": 1000,
+          "fields": {
+            "queried_sender": 1000,
+            "score_shift": 328,
+            "sensitivity": 360
+          },
+          "accuracy": 0.219
+        },
+        "REGIME_ROLE_COT": {
+          "n": 1000,
+          "exact": 82,
+          "format": 1000,
+          "fields": {
+            "net_role": 336,
+            "role_stability": 480,
+            "market_regime": 596
+          },
+          "accuracy": 0.082
+        },
+        "PAIRWISE_FORECAST_COT": {
+          "n": 1000,
+          "exact": 246,
+          "format": 1000,
+          "fields": {
+            "winner": 512,
+            "confidence": 484
+          },
+          "accuracy": 0.246
+        }
+      },
+      "zero": {
+        "ATTRIBUTION_COT": {
+          "n": 1000,
+          "exact": 24,
+          "format": 937,
+          "fields": {
+            "driver": 302,
+            "flow_mode": 308,
+            "top_sender": 197
+          },
+          "accuracy": 0.024
+        },
+        "COUNTERFACTUAL_COT": {
+          "n": 1000,
+          "exact": 180,
+          "format": 999,
+          "fields": {
+            "queried_sender": 999,
+            "score_shift": 340,
+            "sensitivity": 340
+          },
+          "accuracy": 0.18
+        },
+        "REGIME_ROLE_COT": {
+          "n": 1000,
+          "exact": 56,
+          "format": 1000,
+          "fields": {
+            "net_role": 337,
+            "role_stability": 492,
+            "market_regime": 388
+          },
+          "accuracy": 0.056
+        },
+        "PAIRWISE_FORECAST_COT": {
+          "n": 1000,
+          "exact": 238,
+          "format": 1000,
+          "fields": {
+            "winner": 500,
+            "confidence": 500
+          },
+          "accuracy": 0.238
+        }
+      }
+    },
+    "validation": {
+      "drift": {
+        "step": 5000,
+        "accuracy_by_step": {
+          "3000": 0.5325,
+          "4000": 0.623,
+          "5000": 0.65
+        }
+      },
+      "returns": {
+        "step": 1500,
+        "accuracy_by_step": {
+          "1500": 0.126,
+          "2250": 0.1195,
+          "3000": 0.119
+        }
+      }
+    },
+    "gate": "passed",
+    "beats_both_on_all_tasks": true,
+    "validation_selected": true,
+    "variants": {
+      "drift": {
+        "real": {
+          "ATTRIBUTION_COT": {
+            "n": 1000,
+            "exact": 459,
+            "format": 1000,
+            "fields": {
+              "driver": 937,
+              "flow_mode": 914,
+              "top_sender": 544
+            },
+            "accuracy": 0.459
+          },
+          "COUNTERFACTUAL_COT": {
+            "n": 1000,
+            "exact": 845,
+            "format": 1000,
+            "fields": {
+              "queried_sender": 1000,
+              "score_shift": 916,
+              "sensitivity": 845
+            },
+            "accuracy": 0.845
+          },
+          "REGIME_ROLE_COT": {
+            "n": 1000,
+            "exact": 851,
+            "format": 1000,
+            "fields": {
+              "net_role": 940,
+              "role_stability": 981,
+              "market_regime": 922
+            },
+            "accuracy": 0.851
+          },
+          "PAIRWISE_FORECAST_COT": {
+            "n": 1000,
+            "exact": 455,
+            "format": 1000,
+            "fields": {
+              "winner": 499,
+              "confidence": 908
+            },
+            "accuracy": 0.455
+          }
+        },
+        "shuffled": {
+          "ATTRIBUTION_COT": {
+            "n": 1000,
+            "exact": 30,
+            "format": 1000,
+            "fields": {
+              "driver": 326,
+              "flow_mode": 441,
+              "top_sender": 202
+            },
+            "accuracy": 0.03
+          },
+          "COUNTERFACTUAL_COT": {
+            "n": 1000,
+            "exact": 212,
+            "format": 1000,
+            "fields": {
+              "queried_sender": 1000,
+              "score_shift": 320,
+              "sensitivity": 331
+            },
+            "accuracy": 0.212
+          },
+          "REGIME_ROLE_COT": {
+            "n": 1000,
+            "exact": 144,
+            "format": 1000,
+            "fields": {
+              "net_role": 326,
+              "role_stability": 503,
+              "market_regime": 927
+            },
+            "accuracy": 0.144
+          },
+          "PAIRWISE_FORECAST_COT": {
+            "n": 1000,
+            "exact": 237,
+            "format": 1000,
+            "fields": {
+              "winner": 490,
+              "confidence": 477
+            },
+            "accuracy": 0.237
+          }
+        },
+        "zero": {
+          "ATTRIBUTION_COT": {
+            "n": 1000,
+            "exact": 20,
+            "format": 997,
+            "fields": {
+              "driver": 327,
+              "flow_mode": 330,
+              "top_sender": 214
+            },
+            "accuracy": 0.02
+          },
+          "COUNTERFACTUAL_COT": {
+            "n": 1000,
+            "exact": 282,
+            "format": 1000,
+            "fields": {
+              "queried_sender": 1000,
+              "score_shift": 338,
+              "sensitivity": 323
+            },
+            "accuracy": 0.282
+          },
+          "REGIME_ROLE_COT": {
+            "n": 1000,
+            "exact": 56,
+            "format": 1000,
+            "fields": {
+              "net_role": 335,
+              "role_stability": 500,
+              "market_regime": 333
+            },
+            "accuracy": 0.056
+          },
+          "PAIRWISE_FORECAST_COT": {
+            "n": 1000,
+            "exact": 250,
+            "format": 1000,
+            "fields": {
+              "winner": 486,
+              "confidence": 500
+            },
+            "accuracy": 0.25
+          }
+        },
+        "local": {
+          "ATTRIBUTION_COT": {
+            "n": 1000,
+            "exact": 14,
+            "format": 989,
+            "fields": {
+              "driver": 339,
+              "flow_mode": 331,
+              "top_sender": 214
+            },
+            "accuracy": 0.014
+          },
+          "COUNTERFACTUAL_COT": {
+            "n": 1000,
+            "exact": 174,
+            "format": 1000,
+            "fields": {
+              "queried_sender": 1000,
+              "score_shift": 321,
+              "sensitivity": 324
+            },
+            "accuracy": 0.174
+          },
+          "REGIME_ROLE_COT": {
+            "n": 1000,
+            "exact": 73,
+            "format": 1000,
+            "fields": {
+              "net_role": 456,
+              "role_stability": 500,
+              "market_regime": 333
+            },
+            "accuracy": 0.073
+          },
+          "PAIRWISE_FORECAST_COT": {
+            "n": 1000,
+            "exact": 234,
+            "format": 1000,
+            "fields": {
+              "winner": 501,
+              "confidence": 500
+            },
+            "accuracy": 0.234
+          }
+        }
+      },
+      "returns": {
+        "real": {
+          "ATTRIBUTION_COT": {
+            "n": 1000,
+            "exact": 22,
+            "format": 999,
+            "fields": {
+              "driver": 353,
+              "flow_mode": 332,
+              "top_sender": 208
+            },
+            "accuracy": 0.022
+          },
+          "COUNTERFACTUAL_COT": {
+            "n": 1000,
+            "exact": 170,
+            "format": 998,
+            "fields": {
+              "queried_sender": 998,
+              "score_shift": 334,
+              "sensitivity": 330
+            },
+            "accuracy": 0.17
+          },
+          "REGIME_ROLE_COT": {
+            "n": 1000,
+            "exact": 54,
+            "format": 1000,
+            "fields": {
+              "net_role": 329,
+              "role_stability": 500,
+              "market_regime": 355
+            },
+            "accuracy": 0.054
+          },
+          "PAIRWISE_FORECAST_COT": {
+            "n": 1000,
+            "exact": 249,
+            "format": 1000,
+            "fields": {
+              "winner": 490,
+              "confidence": 515
+            },
+            "accuracy": 0.249
+          }
+        }
+      },
+      "text": {
+        "text": {
+          "ATTRIBUTION_COT": {
+            "n": 1000,
+            "exact": 31,
+            "format": 899,
+            "fields": {
+              "driver": 306,
+              "flow_mode": 293,
+              "top_sender": 208
+            },
+            "accuracy": 0.031
+          },
+          "COUNTERFACTUAL_COT": {
+            "n": 1000,
+            "exact": 187,
+            "format": 919,
+            "fields": {
+              "queried_sender": 919,
+              "score_shift": 303,
+              "sensitivity": 300
+            },
+            "accuracy": 0.187
+          },
+          "REGIME_ROLE_COT": {
+            "n": 1000,
+            "exact": 31,
+            "format": 690,
+            "fields": {
+              "net_role": 235,
+              "role_stability": 337,
+              "market_regime": 234
+            },
+            "accuracy": 0.031
+          },
+          "PAIRWISE_FORECAST_COT": {
+            "n": 1000,
+            "exact": 233,
+            "format": 902,
+            "fields": {
+              "winner": 459,
+              "confidence": 456
+            },
+            "accuracy": 0.233
+          }
+        }
+      }
+    },
+    "random_pairs": {
+      "drift": {
+        "real": {
+          "PAIRWISE_FORECAST_COT": {
+            "n": 1000,
+            "exact": 482,
+            "format": 1000,
+            "fields": {
+              "winner": 523,
+              "confidence": 933
+            },
+            "accuracy": 0.482
+          }
+        },
+        "shuffled": {
+          "PAIRWISE_FORECAST_COT": {
+            "n": 1000,
+            "exact": 254,
+            "format": 1000,
+            "fields": {
+              "winner": 488,
+              "confidence": 502
+            },
+            "accuracy": 0.254
+          }
+        },
+        "zero": {
+          "PAIRWISE_FORECAST_COT": {
+            "n": 1000,
+            "exact": 289,
+            "format": 1000,
+            "fields": {
+              "winner": 508,
+              "confidence": 564
+            },
+            "accuracy": 0.289
+          }
+        },
+        "local": {
+          "PAIRWISE_FORECAST_COT": {
+            "n": 1000,
+            "exact": 268,
+            "format": 1000,
+            "fields": {
+              "winner": 487,
+              "confidence": 564
+            },
+            "accuracy": 0.268
+          }
+        }
+      },
+      "returns": {
+        "real": {
+          "PAIRWISE_FORECAST_COT": {
+            "n": 1000,
+            "exact": 247,
+            "format": 1000,
+            "fields": {
+              "winner": 479,
+              "confidence": 512
+            },
+            "accuracy": 0.247
+          }
+        }
+      },
+      "text": {
+        "text": {
+          "PAIRWISE_FORECAST_COT": {
+            "n": 1000,
+            "exact": 218,
+            "format": 907,
+            "fields": {
+              "winner": 464,
+              "confidence": 423
+            },
+            "accuracy": 0.218
+          }
+        }
+      }
+    },
+    "drops_pp": {
+      "ATTRIBUTION_COT": {
+        "shuffled": 42.9,
+        "zero": 43.9,
+        "local": 44.5
+      },
+      "COUNTERFACTUAL_COT": {
+        "shuffled": 63.3,
+        "zero": 56.3,
+        "local": 67.1
+      },
+      "REGIME_ROLE_COT": {
+        "shuffled": 70.7,
+        "zero": 79.5,
+        "local": 77.8
+      },
+      "PAIRWISE_FORECAST_COT": {
+        "shuffled": 21.8,
+        "zero": 20.5,
+        "local": 22.1
+      }
+    },
+    "examples": [
+      {
+        "date": "2024-01-02",
+        "target": "BAC",
+        "task": "ATTRIBUTION_COT",
+        "question": "Classify the signal driver (LOCAL_DOMINANT, FLOW_REINFORCED, FLOW_OFFSET) and flow mode (RETENTION_LED, NEW_TRANSMISSION_LED, MULTI_DAY_RELAY). Identify the strongest absolute directed incoming edge among the five candidates. Return driver, flow_mode, top_sender.",
+        "drift": "<reasoning>With a positive local score, flow offsets the local signal. The flow components show that the retention share is in the upper half of non-relay updates. WBD has the largest absolute edge, with positive sign.</reasoning>\n<answer>{\"driver\":\"FLOW_OFFSET\",\"flow_mode\":\"RETENTION_LED\",\"top_sender\":\"WBD\"}</answer>",
+        "baseline": "<reasoning>With a positive local score, flow offsets the local signal. In the update, the retention share is in the lower half of non-relay updates. The strongest channel is BBWI's positive edge.</reasoning>\n<answer>{\"driver\":\"FLOW_OFFSET\",\"flow_mode\":\"NEW_TRANSMISSION_LED\",\"top_sender\":\"BBWI\"}</answer>",
+        "gold": {
+          "driver": "FLOW_OFFSET",
+          "flow_mode": "RETENTION_LED",
+          "top_sender": "WBD"
+        },
+        "reference_evidence": "With a negative local score, flow offsets the local signal. Today's update shows that the retention share is in the upper half of non-relay updates. The largest inbound coupling is positive and comes from WBD.",
+        "evidence_check": {
+          "drift": {
+            "supported": 2,
+            "total": 3,
+            "other_wording": [
+              "With a positive local score, flow offsets the local signal."
+            ]
+          },
+          "returns": {
+            "supported": 0,
+            "total": 3,
+            "other_wording": [
+              "With a positive local score, flow offsets the local signal.",
+              "In the update, the retention share is in the lower half of non-relay updates.",
+              "The strongest channel is BBWI's positive edge."
+            ]
+          }
+        }
+      },
+      {
+        "date": "2024-07-01",
+        "target": "CF",
+        "task": "COUNTERFACTUAL_COT",
+        "question": "Mask the directed edge from AMAT into the target, holding the other edges and previous state fixed. Classify the model score shift (INCREASE, DECREASE, NEGLIGIBLE) and sensitivity (LOW, MODERATE, HIGH). Return queried_sender, score_shift, sensitivity.",
+        "drift": "<reasoning>The selected edge carries negative coupling from AMAT. When that path is masked, the recomputed score moves upward. Its response falls in the moderate sensitivity band.</reasoning>\n<answer>{\"queried_sender\":\"AMAT\",\"score_shift\":\"INCREASE\",\"sensitivity\":\"MODERATE\"}</answer>",
+        "baseline": "<reasoning>The incoming AMAT relation has a positive operator sign. With this edge removed, the model score moves downward and sensitivity is high.</reasoning>\n<answer>{\"queried_sender\":\"AMAT\",\"score_shift\":\"DECREASE\",\"sensitivity\":\"HIGH\"}</answer>",
+        "gold": {
+          "queried_sender": "AMAT",
+          "score_shift": "INCREASE",
+          "sensitivity": "MODERATE"
+        },
+        "reference_evidence": "The incoming AMAT relation has a negative operator sign. The frozen-model intervention has moderate sensitivity. Under the mask the target score moves upward.",
+        "evidence_check": {
+          "drift": {
+            "supported": 3,
+            "total": 3,
+            "other_wording": []
+          },
+          "returns": {
+            "supported": 0,
+            "total": 2,
+            "other_wording": [
+              "The incoming AMAT relation has a positive operator sign.",
+              "With this edge removed, the model score moves downward and sensitivity is high."
+            ]
+          }
+        }
+      },
+      {
+        "date": "2025-12-29",
+        "target": "ES",
+        "task": "REGIME_ROLE_COT",
+        "question": "Classify net_role (NET_RECEIVER, BALANCED, NET_SENDER), role_stability (STABLE, SHIFTING), and market_regime (IDIOSYNCRATIC, MODERATE, HIGH_PROPAGATION). Return these three fields.",
+        "drift": "<reasoning>The two activity gates place ES in the balanced group. The role memberships are relatively stable across the two endpoints. The cross-sectional operator has intermediate propagation intensity.</reasoning>\n<answer>{\"net_role\":\"BALANCED\",\"role_stability\":\"STABLE\",\"market_regime\":\"MODERATE\"}</answer>",
+        "baseline": "<reasoning>The sender-minus-receiver activity places the stock in the balanced band. The market-wide transmission measure is low. Over twenty sessions the stock's role mix is relatively stable.</reasoning>\n<answer>{\"net_role\":\"BALANCED\",\"role_stability\":\"STABLE\",\"market_regime\":\"IDIOSYNCRATIC\"}</answer>",
+        "gold": {
+          "net_role": "BALANCED",
+          "role_stability": "STABLE",
+          "market_regime": "MODERATE"
+        },
+        "reference_evidence": "The sender-minus-receiver activity places the stock in the balanced band. Role membership is relatively stable over the lookback. Market propagation intensity is intermediate.",
+        "evidence_check": {
+          "drift": {
+            "supported": 3,
+            "total": 3,
+            "other_wording": []
+          },
+          "returns": {
+            "supported": 2,
+            "total": 3,
+            "other_wording": [
+              "The market-wide transmission measure is low."
+            ]
+          }
+        }
+      }
+    ]
+  }
+}

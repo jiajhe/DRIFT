@@ -1,0 +1,320 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#f5f4ef">
+  <title>MarketFlow · DRIFT-TSLM v2.1</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' fill='%2312151a'/><rect x='6' y='15' width='4' height='11' fill='%230b6e64'/><rect x='14' y='7' width='4' height='19' fill='%23ffffff'/><rect x='22' y='11' width='4' height='15' fill='%23d97706'/></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./style.css?v=6">
+</head>
+<body>
+  <header class="topbar">
+    <div class="shell top">
+      <a class="brand" href="#explorer" aria-label="MarketFlow home">
+        <span class="logomark" aria-hidden="true"><i></i><i></i><i></i></span>
+        <span class="brand-text">MarketFlow</span>
+        <span class="version-tag">DRIFT-TSLM v2.1</span>
+      </a>
+      <nav aria-label="Main">
+        <a href="#explorer">Flow Explorer</a>
+        <a href="#replay">Replay</a>
+        <a href="#multiday">Multi-Day Replay</a>
+        <a href="#model">Model card</a>
+      </nav>
+      <div class="status-meta" id="source-wrap">
+        <span class="live-dot" aria-hidden="true"></span>
+        <small class="archive" id="source-mode">Archived inference</small>
+      </div>
+    </div>
+  </header>
+
+  <main class="shell">
+    <section class="hero">
+      <div class="hero-copy">
+        <span class="eyebrow" id="domain">S&amp;P 500 · Alpha158 · Qwen3.5-4B</span>
+        <h1 id="page-title">Flow Explorer</h1>
+        <p id="page-subtitle">Pick a stock and date to inspect its five strongest inbound channels, mask an edge, and read what Qwen3.5-4B infers from the 25 DRIFT tokens alone.</p>
+      </div>
+      <div class="hero-kpis" id="hero-kpis" aria-label="Held-out 2024 to 2025 summary">
+        <div class="kpi-cell">
+          <span class="kpi-val teal">84.5%</span>
+          <span class="kpi-lbl">Edge-mask accuracy <em>+63.3pp</em></span>
+        </div>
+        <div class="kpi-cell">
+          <span class="kpi-val navy">85.1%</span>
+          <span class="kpi-lbl">Role &amp; regime <em>+70.7pp</em></span>
+        </div>
+        <div class="kpi-cell">
+          <span class="kpi-val rust">157×20</span>
+          <span class="kpi-lbl">Factor window <em>Tokens only</em></span>
+        </div>
+        <div class="kpi-cell">
+          <span class="kpi-val teal">Passed</span>
+          <span class="kpi-lbl">Control checks <em>All 3 tasks</em></span>
+        </div>
+      </div>
+    </section>
+
+    <p role="status" id="status" class="notice" hidden></p>
+
+    <div id="workspace">
+      <form id="filters" class="command-bar sheet">
+        <div class="control-group">
+          <label class="field-lbl">Date
+            <select id="date" disabled></select>
+          </label>
+          <label class="field-lbl">Ticker
+            <input id="ticker" list="symbols" placeholder="AAPL" maxlength="32" required disabled>
+            <datalist id="symbols"></datalist>
+          </label>
+          <button id="load" type="submit" class="btn-primary" disabled>Load</button>
+        </div>
+        <div class="quick-tickers" id="quick-tickers" aria-label="Quick stock selection"></div>
+        <div id="transport" class="transport" hidden>
+          <button type="button" id="prev" class="btn-ghost" aria-label="Previous trading day">← Prev</button>
+          <button type="button" id="play" class="btn-primary">Play</button>
+          <button type="button" id="next" class="btn-ghost" aria-label="Next trading day">Next →</button>
+        </div>
+      </form>
+
+      <div id="content" hidden>
+        <section class="signal-strip" aria-label="Selected stock summary">
+          <article class="stat-cell">
+            <div class="stat-top"><span class="stat-label">Ticker</span><span class="tag tag-rust" id="sector-badge">S&amp;P 500</span></div>
+            <strong id="target-metric" class="stat-value"></strong>
+            <span class="stat-sub" id="window-sub">20-day input window</span>
+          </article>
+          <article class="stat-cell">
+            <div class="stat-top"><span class="stat-label">DRIFT score (4-seed)</span><span class="tag" id="stance-badge">SIGNAL</span></div>
+            <strong id="score" class="stat-value"></strong>
+            <span class="stat-sub" id="score-sub">Cross-sectional z-score</span>
+          </article>
+          <article class="stat-cell">
+            <div class="stat-top"><span class="stat-label">Local vs. flow</span><span class="tag tag-navy" id="driver-badge">DRIFT</span></div>
+            <div class="split-nums">
+              <span>Local <b id="tel-local">—</b></span>
+              <span>Flow <b id="tel-flow">—</b></span>
+            </div>
+            <div class="mini-split-track" aria-hidden="true"><i id="tel-local-bar"></i><i id="tel-flow-bar"></i></div>
+          </article>
+          <article class="stat-cell">
+            <div class="stat-top"><span class="stat-label">Universe &amp; role</span><span class="tag tag-teal" id="role-badge">ACTIVE</span></div>
+            <strong id="universe" class="stat-value"></strong>
+            <span class="stat-sub" id="role-sub">20-day flow state</span>
+          </article>
+        </section>
+
+        <div class="workspace-grid">
+          <div class="col-main">
+            <section class="panel sheet graph-panel">
+              <div class="panel-heading">
+                <div>
+                  <span class="eyebrow">Cross-stock operator K[i, j]</span>
+                  <h2>Inbound Flow Graph</h2>
+                </div>
+                <div class="legend">
+                  <span class="positive">Positive</span>
+                  <span class="negative">Negative</span>
+                  <span class="masked-key" id="masked-key" hidden>Masked</span>
+                </div>
+              </div>
+              <div class="canvas-stage">
+                <canvas id="network" aria-label="Directed edges from the five upstream stocks into the target. Click any sender to inspect or mask it."></canvas>
+                <div class="canvas-hud" id="canvas-hud" hidden></div>
+                <div class="canvas-tip">Click a sender box to select its channel</div>
+              </div>
+              <div class="panel-foot">
+                <span id="window"></span>
+                <span>Weight scale ∝ |K[i, j]| · seed-0 checkpoint</span>
+              </div>
+            </section>
+
+            <div class="sub-grid">
+              <section class="panel sheet">
+                <div class="panel-heading">
+                  <div>
+                    <span class="eyebrow">20-day return</span>
+                    <h2>Target vs. Sender</h2>
+                  </div>
+                  <div class="spark-legend">
+                    <span class="sp-target" id="sp-target-lbl">Target</span>
+                    <span class="sp-sender" id="sp-sender-lbl">Sender</span>
+                  </div>
+                </div>
+                <svg id="sparkline" class="sparkline" role="img" aria-label="20-day cumulative return comparison"></svg>
+                <p class="caption" id="spark-caption">Cumulative return paths over the 20-day factor window.</p>
+              </section>
+
+              <section class="panel sheet">
+                <div class="panel-heading">
+                  <div>
+                    <span class="eyebrow">State update F<sub>t</sub></span>
+                    <h2>Flow Memory</h2>
+                  </div>
+                </div>
+                <div id="components" class="bars"></div>
+                <p class="caption">L2 norms of carried retention, same-day transmission, and multi-day relay.</p>
+              </section>
+            </div>
+          </div>
+
+          <div class="col-side">
+            <section class="panel sheet">
+              <div class="panel-heading">
+                <div>
+                  <span class="eyebrow">Top 5 by |K[i, j]|</span>
+                  <h2>Upstream Senders</h2>
+                </div>
+                <span class="micro-note">Select a row</span>
+              </div>
+              <div class="table-head"><span>Sender</span><span>Signed weight</span></div>
+              <div id="senders" class="sender-list"></div>
+              <div class="intervention">
+                <button class="btn-sever" id="mask" type="button">Mask selected edge</button>
+                <div class="mask-readout" id="mask-box">
+                  <p id="mask-result" role="status">Mask this edge to zero it out in DRIFT and recompute the score.</p>
+                </div>
+              </div>
+            </section>
+
+            <section class="panel sheet readout-panel">
+              <div class="panel-heading">
+                <div>
+                  <span class="eyebrow navy-text">Qwen3.5-4B · 25 DRIFT tokens</span>
+                  <h2>Model Readout</h2>
+                </div>
+                <span class="tag tag-navy" title="No edge weights, norms, or scores appear in text prompts">No numbers in prompt</span>
+              </div>
+
+              <div class="task-tabs" id="task-pills" role="tablist" aria-label="Question types">
+                <button type="button" class="task-pill" data-task="ATTRIBUTION_COT" aria-selected="true">Attribution</button>
+                <button type="button" class="task-pill" data-task="COUNTERFACTUAL_COT" aria-selected="false">Masked edge</button>
+                <button type="button" class="task-pill" data-task="REGIME_ROLE_COT" aria-selected="false">Role &amp; regime</button>
+                <button type="button" class="task-pill" data-task="PAIRWISE_FORECAST_COT" aria-selected="false">Pairwise</button>
+              </div>
+
+              <label class="question sr-select">Question
+                <select id="task">
+                  <option value="ATTRIBUTION_COT">What drives this stock’s signal?</option>
+                  <option value="COUNTERFACTUAL_COT">What changes if the selected edge is masked?</option>
+                  <option value="REGIME_ROLE_COT">How has its market role changed?</option>
+                  <option value="PAIRWISE_FORECAST_COT">Which of two stocks ranks higher?</option>
+                </select>
+              </label>
+
+              <div id="pair-label" class="pair-box" hidden>
+                <label class="question">Compare against
+                  <input id="pair" list="pair-symbols" maxlength="32">
+                  <datalist id="pair-symbols"></datalist>
+                </label>
+                <div class="pair-chips" id="pair-chips"></div>
+              </div>
+
+              <div class="copilot-actions">
+                <button id="ask" type="button" class="btn-copilot">Run model</button>
+              </div>
+              <div id="answer" class="copilot-output" role="status" aria-live="polite"></div>
+            </section>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <section id="multiday" hidden aria-label="Five-session counterfactual replay">
+      <div class="md-controls sheet">
+        <fieldset>
+          <legend>Market</legend>
+          <div id="md-markets" class="md-switch">
+            <button type="button" data-market="SP500" aria-pressed="true">S&amp;P 500 (Alpha158)</button>
+            <button type="button" data-market="CSI300" aria-pressed="false">CSI 300 (Alpha158)</button>
+          </div>
+        </fieldset>
+        <label for="md-case">Date &amp; stock
+          <select id="md-case" disabled></select>
+        </label>
+        <fieldset>
+          <legend>Mask schedule</legend>
+          <div id="md-modes" class="md-switch">
+            <button type="button" data-mode="today" aria-pressed="false">Today Only</button>
+            <button type="button" data-mode="five" aria-pressed="false">5-Day Mask</button>
+            <button type="button" data-mode="restored" aria-pressed="true">4-Day Mask, Restored Today</button>
+          </div>
+        </fieldset>
+      </div>
+      <p id="md-status" role="status"></p>
+      <div id="md-results" hidden>
+        <div class="md-readouts" aria-live="polite">
+          <article class="md-metric md-a">
+            <div class="md-label"><b id="md-name-a">Sender A</b> <span>· Day 5 Δscore</span></div>
+            <strong id="md-delta-a"></strong>
+            <p id="md-edge-a"></p>
+          </article>
+          <article class="md-metric md-b">
+            <div class="md-label"><b id="md-name-b">Sender B</b> <span>· Day 5 Δscore</span></div>
+            <strong id="md-delta-b"></strong>
+            <p id="md-edge-b"></p>
+          </article>
+          <article class="md-metric md-win">
+            <div class="md-label">Larger absolute move</div>
+            <strong id="md-winner"></strong>
+            <p id="md-comparison"></p>
+          </article>
+        </div>
+        <section class="panel sheet md-chart-panel">
+          <div class="panel-heading">
+            <div>
+              <span id="md-target" class="eyebrow"></span>
+              <h2>Five-session score difference</h2>
+            </div>
+            <div class="md-key">
+              <span class="md-a" id="md-key-a"></span>
+              <span class="md-b" id="md-key-b"></span>
+            </div>
+          </div>
+          <svg id="md-chart" role="img" aria-labelledby="md-chart-title"></svg>
+          <p id="md-mechanism"></p>
+        </section>
+        <details id="md-details" class="panel sheet">
+          <summary>Daily recomputed scores</summary>
+          <div class="md-table-tools">
+            <span>Seed-0 scores · Δ = masked − unmasked</span>
+            <label><input type="checkbox" id="md-precision">Full precision</label>
+          </div>
+          <div class="md-scroll">
+            <table class="model-table" id="md-table">
+              <thead>
+                <tr>
+                  <th scope="col">Trading day</th>
+                  <th scope="col">Unmasked</th>
+                  <th id="md-th-a" scope="col">Mask A</th>
+                  <th scope="col">Δ A</th>
+                  <th id="md-th-b" scope="col">Mask B</th>
+                  <th scope="col">Δ B</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </details>
+      </div>
+    </section>
+
+    <section id="model" hidden>
+      <div id="model-content"></div>
+    </section>
+  </main>
+
+  <footer class="shell">
+    <span>MarketFlow · DRIFT-TSLM v2.1</span>
+    <span id="footer-gate"></span>
+    <span id="md-footer" hidden>Frozen DRIFT · seed 0</span>
+    <span>TimeNet Hackathon · Round 1</span>
+  </footer>
+  <script src="./config.js"></script>
+  <script type="module" src="./app.js?v=6"></script>
+</body>
+</html>
